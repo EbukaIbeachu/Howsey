@@ -1,0 +1,45 @@
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+
+    # Handle Front Controller...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+</IfModule>
+
+# Block access to sensitive files and directories
+<FilesMatch "^\.env|composer\.json|composer\.lock|package\.json|phpunit\.xml|README\.md|DEPLOYMENT_GUIDE\.md|HOSTINGER_DEPLOYMENT\.md">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+<IfModule mod_authz_core.c>
+    <FilesMatch "^\.env|composer\.json|composer\.lock|package\.json|phpunit\.xml|README\.md|DEPLOYMENT_GUIDE\.md|HOSTINGER_DEPLOYMENT\.md">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+
+# Block access to specific directories
+RedirectMatch 403 ^/app/
+RedirectMatch 403 ^/bootstrap/
+RedirectMatch 403 ^/config/
+RedirectMatch 403 ^/database/
+RedirectMatch 403 ^/resources/
+RedirectMatch 403 ^/routes/
+RedirectMatch 403 ^/storage/logs/
+RedirectMatch 403 ^/tests/
+RedirectMatch 403 ^/vendor/
+
+# Allow access to test_chatbot.php
+<Files "test_chatbot.php">
+    Order allow,deny
+    Allow from all
+</Files>

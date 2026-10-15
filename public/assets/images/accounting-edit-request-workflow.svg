@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1120" viewBox="0 0 1600 1120" role="img" aria-labelledby="title desc">
+  <title id="title">Accounting Edit Request Workflow</title>
+  <desc id="desc">Workflow diagram showing how accountant edit requests move through admin approval, accountant editing, lock back, and final admin review.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569" />
+    </marker>
+    <style>
+      .bg { fill: #f8fafc; }
+      .title { font: 700 34px Arial, sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 18px Arial, sans-serif; fill: #475569; }
+      .lane-title { font: 700 20px Arial, sans-serif; fill: #1e293b; }
+      .text { font: 400 18px Arial, sans-serif; fill: #0f172a; }
+      .small { font: 400 15px Arial, sans-serif; fill: #475569; }
+      .box { stroke: #cbd5e1; stroke-width: 2; rx: 18; ry: 18; }
+      .accountant { fill: #ede9fe; }
+      .admin { fill: #dbeafe; }
+      .system { fill: #ecfccb; }
+      .end { fill: #fee2e2; }
+      .arrow { stroke: #475569; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .dashed { stroke-dasharray: 9 8; }
+      .lane { stroke: #e2e8f0; stroke-width: 2; fill: none; }
+      .legend-box { stroke: #cbd5e1; stroke-width: 1.5; rx: 10; ry: 10; fill: #ffffff; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1600" height="1120" />
+
+  <text class="title" x="70" y="70">Accounting Edit Request Workflow</text>
+  <text class="subtitle" x="70" y="105">Admin controls access. Accountant edits. Accountant must lock back before final admin review.</text>
+
+  <line class="lane" x1="70" y1="150" x2="1530" y2="150" />
+  <line class="lane" x1="70" y1="500" x2="1530" y2="500" />
+  <line class="lane" x1="70" y1="840" x2="1530" y2="840" />
+
+  <text class="lane-title" x="70" y="185">Accountant</text>
+  <text class="lane-title" x="70" y="535">System / Record State</text>
+  <text class="lane-title" x="70" y="875">Admin</text>
+
+  <rect class="box accountant" x="220" y="220" width="250" height="100" />
+  <text class="text" x="345" y="260" text-anchor="middle">1. Record is locked</text>
+  <text class="small" x="345" y="292" text-anchor="middle">Accountant cannot edit directly</text>
+
+  <rect class="box accountant" x="520" y="220" width="280" height="100" />
+  <text class="text" x="660" y="260" text-anchor="middle">2. Accountant requests edit</text>
+  <text class="small" x="660" y="292" text-anchor="middle">Reason is submitted to admin</text>
+
+  <rect class="box admin" x="1130" y="900" width="260" height="100" />
+  <text class="text" x="1260" y="940" text-anchor="middle">3. Admin reviews request</text>
+  <text class="small" x="1260" y="972" text-anchor="middle">Approve or reject</text>
+
+  <rect class="box end" x="1130" y="760" width="260" height="100" />
+  <text class="text" x="1260" y="800" text-anchor="middle">4A. Reject request</text>
+  <text class="small" x="1260" y="832" text-anchor="middle">Record stays locked</text>
+
+  <rect class="box admin" x="820" y="900" width="260" height="100" />
+  <text class="text" x="950" y="940" text-anchor="middle">4B. Approve request</text>
+  <text class="small" x="950" y="972" text-anchor="middle">Admin sets edit time window</text>
+
+  <rect class="box system" x="820" y="560" width="260" height="110" />
+  <text class="text" x="950" y="600" text-anchor="middle">5. Record unlocks</text>
+  <text class="small" x="950" y="632" text-anchor="middle">Accountant can edit during</text>
+  <text class="small" x="950" y="654" text-anchor="middle">the approved time window</text>
+
+  <rect class="box accountant" x="820" y="220" width="260" height="100" />
+  <text class="text" x="950" y="260" text-anchor="middle">6. Accountant edits</text>
+  <text class="small" x="950" y="292" text-anchor="middle">Makes corrections or updates</text>
+
+  <rect class="box accountant" x="1130" y="220" width="280" height="100" />
+  <text class="text" x="1270" y="252" text-anchor="middle">7. Accountant locks back</text>
+  <text class="small" x="1270" y="284" text-anchor="middle">Can use "Lock Back" or</text>
+  <text class="small" x="1270" y="306" text-anchor="middle">"Save and Lock Back"</text>
+
+  <rect class="box system" x="1130" y="560" width="280" height="110" />
+  <text class="text" x="1270" y="600" text-anchor="middle">8. Record returns for review</text>
+  <text class="small" x="1270" y="632" text-anchor="middle">Status becomes pending for</text>
+  <text class="small" x="1270" y="654" text-anchor="middle">admin review again</text>
+
+  <rect class="box admin" x="1130" y="900" width="260" height="100" opacity="0"/>
+  <rect class="box admin" x="520" y="900" width="240" height="100" />
+  <text class="text" x="640" y="940" text-anchor="middle">9. Admin reviews record</text>
+  <text class="small" x="640" y="972" text-anchor="middle">Now admin can act on it</text>
+
+  <rect class="box admin" x="220" y="900" width="250" height="100" />
+  <text class="text" x="345" y="940" text-anchor="middle">10A. Accept record</text>
+  <text class="small" x="345" y="972" text-anchor="middle">Record is finalized</text>
+
+  <rect class="box end" x="820" y="760" width="260" height="100" />
+  <text class="text" x="950" y="800" text-anchor="middle">10B. Reject record</text>
+  <text class="small" x="950" y="832" text-anchor="middle">Accountant must request edit again</text>
+
+  <line class="arrow" x1="470" y1="270" x2="520" y2="270" />
+  <line class="arrow" x1="800" y1="270" x2="950" y2="270" />
+  <line class="arrow" x1="660" y1="320" x2="660" y2="900" />
+  <line class="arrow" x1="760" y1="950" x2="820" y2="950" />
+  <line class="arrow" x1="950" y1="900" x2="950" y2="670" />
+  <line class="arrow" x1="950" y1="560" x2="950" y2="320" />
+  <line class="arrow" x1="1080" y1="270" x2="1130" y2="270" />
+  <line class="arrow" x1="1270" y1="320" x2="1270" y2="560" />
+  <line class="arrow" x1="1130" y1="615" x2="1080" y2="615" />
+  <line class="arrow" x1="950" y1="670" x2="950" y2="760" />
+  <line class="arrow" x1="820" y1="810" x2="760" y2="810" />
+  <line class="arrow" x1="640" y1="900" x2="470" y2="900" />
+
+  <line class="arrow dashed" x1="1260" y1="900" x2="1260" y2="860" />
+  <line class="arrow dashed" x1="1130" y1="810" x2="1080" y2="810" />
+
+  <text class="small" x="1000" y="785">If admin rejects after review,</text>
+  <text class="small" x="1000" y="807">the cycle starts again with a new request.</text>
+
+  <rect class="legend-box" x="70" y="1015" width="1460" height="70" />
+  <rect class="box accountant" x="100" y="1036" width="28" height="28" />
+  <text class="small" x="140" y="1056">Accountant action</text>
+  <rect class="box admin" x="360" y="1036" width="28" height="28" />
+  <text class="small" x="400" y="1056">Admin action</text>
+  <rect class="box system" x="580" y="1036" width="28" height="28" />
+  <text class="small" x="620" y="1056">System / record state</text>
+  <rect class="box end" x="900" y="1036" width="28" height="28" />
+  <text class="small" x="940" y="1056">Reject / stop state</text>
+  <line class="arrow dashed" x1="1180" y1="1050" x2="1250" y2="1050" />
+  <text class="small" x="1270" y="1056">Alternative / exception path</text>
+</svg>

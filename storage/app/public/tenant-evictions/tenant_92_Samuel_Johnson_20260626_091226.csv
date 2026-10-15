@@ -1,0 +1,26 @@
+"Eviction Export"
+"Generated At","2026-06-26 09:12:26"
+
+"Tenant Summary"
+"Tenant ID",92
+"Full Name","Samuel Johnson"
+Email,s.johnson@okaro.online
+Phone,0800000000
+"Move In Date",2026-06-25
+"Move Out Date",2026-06-26
+"Active Status",Active
+Building,"Mmaduabuchi Lodge"
+Unit,A02
+"Assigned Manager","Lagos Portfolio Manager"
+"Manager Email",lagos.manager@okaro.online
+"Manager Phone",
+"Total Paid",100000.00
+"Outstanding Balance",0.00
+
+"Lease History"
+"Lease ID",Status,"Start Date","End Date","Rent Amount","Rent Duration","Total Paid",Outstanding
+99,ACTIVE,2026-06-25,2026-06-26,100000.00,,100000.00,0.00
+
+"Payment History"
+"Payment ID","Lease ID",Date,Amount,Method,Status,Reference
+159,99,2026-06-25,100000.00,BANK_TRANSFER,COMPLETED,

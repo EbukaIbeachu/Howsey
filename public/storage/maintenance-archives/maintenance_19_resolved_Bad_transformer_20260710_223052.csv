@@ -1,0 +1,25 @@
+"Maintenance Request Archive"
+"Generated At","2026-07-10 22:30:52"
+
+"Request Summary"
+"Request ID",19
+Title,"Bad transformer"
+Description,"Transformer is faulty"
+Type,ELECTRICAL
+Priority,MEDIUM
+Status,RESOLVED
+"Created At","2026-07-09 23:31:31"
+"Resolved At","2026-07-10 22:30:52"
+
+"Tenant & Location"
+"Tenant Name","Mike John"
+"Tenant Email",m.john@okaro.online
+"Tenant Phone",08023456789
+Building,"Mmaduabuchi Lodge"
+Unit,A01
+
+Assignment
+"Submitted By","M John"
+"Submitted By Email",m.john@okaro.online
+"Assigned Manager","Lagos Portfolio Manager"
+"Manager Email",lagos.manager@okaro.online

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>HOWSEY Offline</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --brand-primary: #7c3aed;
+            --brand-primary-soft: rgba(124, 58, 237, 0.12);
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --surface: #ffffff;
+            --page: #f8fafc;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(180deg, var(--page), #eef2ff);
+            color: var(--text-main);
+            display: grid;
+            place-items: center;
+            padding: 1.5rem;
+        }
+        .offline-card {
+            width: min(100%, 32rem);
+            background: var(--surface);
+            border: 1px solid rgba(124, 58, 237, 0.12);
+            border-radius: 1.25rem;
+            box-shadow: 0 1.2rem 2.5rem rgba(15, 23, 42, 0.10);
+            padding: 2rem;
+            text-align: center;
+        }
+        .offline-icon {
+            width: 4rem;
+            height: 4rem;
+            margin: 0 auto 1rem;
+            border-radius: 1rem;
+            display: grid;
+            place-items: center;
+            background: var(--brand-primary-soft);
+            color: var(--brand-primary);
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+        h1 {
+            margin: 0 0 0.75rem;
+            font-size: 1.6rem;
+        }
+        p {
+            margin: 0 0 1rem;
+            color: var(--text-muted);
+            line-height: 1.55;
+        }
+        .offline-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+        .offline-actions button,
+        .offline-actions a {
+            border: 0;
+            border-radius: 999px;
+            padding: 0.8rem 1.2rem;
+            font: inherit;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .offline-actions button {
+            background: var(--brand-primary);
+            color: #ffffff;
+        }
+        .offline-actions a {
+            background: rgba(15, 23, 42, 0.06);
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+    <main class="offline-card">
+        <div class="offline-icon">H</div>
+        <h1>You are offline</h1>
+        <p>HOWSEY could not reach the network just now. Reconnect and retry to keep working with live company data and notifications.</p>
+        <div class="offline-actions">
+            <button type="button" onclick="window.location.reload()">Try Again</button>
+            <a href="./">Go to Home</a>
+        </div>
+    </main>
+</body>
+</html>
