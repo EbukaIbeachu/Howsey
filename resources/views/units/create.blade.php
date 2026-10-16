@@ -77,7 +77,7 @@
 
                         <div class="col-md-4 mb-3">
                             <label for="bathrooms" class="form-label">Bathrooms <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control @error('bathrooms') is-invalid @enderror" id="bathrooms" name="bathrooms" value="{{ old('bathrooms', 1) }}" required min="0">
+                            <input type="number" class="form-control @error('bathrooms') is-invalid @enderror" id="bathrooms" name="bathrooms" value="{{ old('bathrooms', 0) }}" required min="0">
                             @error('bathrooms')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

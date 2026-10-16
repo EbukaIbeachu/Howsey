@@ -138,7 +138,7 @@
     <div class="section">
         <span class="bold">WHEREAS:</span>
         <ol class="clause-list">
-            <li>The Landlord is the beneficial owner of the property known as <span class="bold">{{ $rent->unit->building->name }}, Unit {{ $rent->unit->unit_number }}</span> situate at <span class="bold">{{ $rent->unit->building->address }}</span> (hereinafter referred to as <span class="bold">"THE DEMISED PREMISES"</span>).</li>
+            <li>The Landlord is the beneficial owner of the property known as <span class="bold">{{ $rent->unit->building->name }}, Unit {{ $rent->unit->unit_number }}</span>@if($rent->unit->unit_type === 'WAREHOUSE') (a warehouse unit)@endif situate at <span class="bold">{{ $rent->unit->building->address }}</span> (hereinafter referred to as <span class="bold">"THE DEMISED PREMISES"</span>).</li>
             <li>
                 The Landlord has agreed to let and the Tenant has agreed to take the Demised Premises
                 @if($rent->end_date)
@@ -167,7 +167,7 @@
             <li>To keep the interior of the Demised Premises, fixtures, and fittings in good and tenantable repair and condition (fair wear and tear excepted).</li>
             <li>Not to make any structural alteration or addition to the Demised Premises without the prior written consent of the Landlord.</li>
             <li>Not to assign, sublet, or part with possession of the Demised Premises or any part thereof without the written consent of the Landlord.</li>
-            <li>To use the Demised Premises for RESIDENTIAL PURPOSES ONLY and not for any illegal or immoral purpose.</li>
+            <li>To use the Demised Premises for {{ strtoupper($rent->unit->permitted_use_clause) }} and not for any illegal or immoral purpose.</li>
             <li>To permit the Landlord or his agents at reasonable hours of the day to enter upon and view the condition of the Demised Premises.</li>
             <li>Not to do or permit to be done on the premises anything which may become a nuisance or annoyance to the Landlord or occupiers of adjoining premises.</li>
             <li>To yield up the Demised Premises at the expiration or sooner determination of the tenancy in good and tenantable repair.</li>

@@ -38,7 +38,13 @@
                             </a>
                         </td>
                         <td>{{ $unit->floor ?? '-' }}</td>
-                        <td>{{ $unit->bedrooms }} Bed / {{ $unit->bathrooms }} Bath</td>
+                        <td>
+                            @if($unit->unit_type === 'WAREHOUSE')
+                                <span class="badge bg-info text-dark">Warehouse</span>
+                            @else
+                                {{ $unit->bedrooms }} Bed / {{ $unit->bathrooms }} Bath
+                            @endif
+                        </td>
                         <td>
                             @if($unit->status === 'OCCUPIED')
                                 <span class="badge bg-success">Occupied</span>

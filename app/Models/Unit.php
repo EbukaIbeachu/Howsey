@@ -51,4 +51,28 @@ class Unit extends Model
     {
         return "{$this->unit_number}".($this->floor ? " - Floor {$this->floor}" : '').", {$this->building->name}";
     }
+
+    /**
+     * Derived unit type. A unit configured with no bedrooms and no bathrooms
+     * is treated as non-residential (warehouse); everything else is residential.
+     */
+    public function getUnitTypeAttribute(): string
+    {
+        return ($this->bedrooms === 0 && $this->bathrooms === 0) ? 'WAREHOUSE' : 'RESIDENTIAL';
+    }
+
+    public function getUnitTypeLabelAttribute(): string
+    {
+        return $this->unit_type === 'WAREHOUSE' ? 'Warehouse' : 'Residential';
+    }
+
+    /**
+     * Wording used by the tenancy agreement's permitted-use covenant.
+     */
+    public function getPermittedUseClauseAttribute(): string
+    {
+        return $this->unit_type === 'WAREHOUSE'
+            ? 'storage, warehousing, and ancillary commercial purposes'
+            : 'residential purposes only';
+    }
 }

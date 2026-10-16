@@ -49,7 +49,14 @@
                     <dd class="col-sm-8">{{ $unit->floor ?? '-' }}</dd>
 
                     <dt class="col-sm-4">Configuration</dt>
-                    <dd class="col-sm-8">{{ $unit->bedrooms }} Bed / {{ $unit->bathrooms }} Bath</dd>
+                    <dd class="col-sm-8">
+                        @if($unit->unit_type === 'WAREHOUSE')
+                            <span class="badge bg-info text-dark">Warehouse</span>
+                            <span class="text-muted small ms-1">no bedrooms or bathrooms</span>
+                        @else
+                            {{ $unit->bedrooms }} Bed / {{ $unit->bathrooms }} Bath
+                        @endif
+                    </dd>
 
                     <dt class="col-sm-4">Status</dt>
                     <dd class="col-sm-8">
