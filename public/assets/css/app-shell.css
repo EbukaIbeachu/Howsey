@@ -392,25 +392,22 @@ body {
 }
 
 .role-watermarked::after {
-    content: attr(data-watermark);
+    content: '';
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-20deg);
-    font-size: 42px;
-    font-weight: 700;
-    color: rgba(0, 0, 0, 0.1);
+    inset: -50vh -50vw;
+    transform: rotate(-20deg);
+    transform-origin: center center;
+    background-image: var(--wm-tile);
+    background-repeat: repeat;
+    background-size: 960px 220px;
     pointer-events: none;
+    user-select: none;
     z-index: 9998;
-    white-space: nowrap;
 }
 
 @media (max-width: 767.98px) {
     .role-watermarked::after {
-        font-size: 28px;
-        max-width: 90vw;
-        text-align: center;
-        white-space: normal;
+        background-size: 520px 140px;
     }
 }
 

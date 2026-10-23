@@ -13,6 +13,8 @@ use App\Http\Controllers\MaintenanceRequestController;
 use App\Http\Controllers\ManagerEditRequestController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PaymentAccountController;
+use App\Http\Controllers\PaymentClaimController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PasswordRecoveryRequestController;
 use App\Http\Controllers\PublicCompanyRegistrationController;
@@ -115,13 +117,34 @@ Route::get('/c/{company}/subscription', [CompanySubscriptionController::class, '
 Route::post('/c/{company}/subscription/renew', [CompanySubscriptionController::class, 'initiateRenewal'])->name('companies.subscription.renew');
 
 Route::get('/storage/{path}', function ($path) {
-    $path = storage_path('app/public/'.$path);
+    $root = realpath(storage_path('app/public'));
 
-    if (! file_exists($path)) {
+    // Reject null-byte injection outright.
+    if ($root === false || str_contains($path, "\0")) {
         abort(404);
     }
 
-    return response()->file($path);
+    // realpath() resolves any "..", symlinks or encoded traversal before we compare.
+    $target = realpath(storage_path('app/public/'.$path));
+
+    if ($target === false
+        || ! is_file($target)
+        || ! str_starts_with($target, $root.DIRECTORY_SEPARATOR)) {
+        abort(404);
+    }
+
+    // Only non-sensitive media may be served here. Agreements, archives and
+    // exports are delivered through authenticated controller actions instead.
+    $publicDirectories = ['buildings/', 'tenants/', 'company-logos/'];
+    $relativePath = str_replace('\\', '/', substr($target, strlen($root) + 1));
+
+    foreach ($publicDirectories as $directory) {
+        if (str_starts_with($relativePath, $directory)) {
+            return response()->file($target);
+        }
+    }
+
+    abort(404);
 })->where('path', '.*');
 
 // Chatbot Route - Fallback for GET requests (debugging)
@@ -376,7 +399,12 @@ Route::post('/bot/message', function (Request $request) {
         return response()->json(['response' => $response, 'status' => 'success']);
 
     } catch (Throwable $e) {
-        return response()->json(['response' => 'Error: '.$e->getMessage()], 200);
+        Log::error('Chatbot endpoint failed', ['exception' => $e]);
+
+        return response()->json([
+            'response' => 'Sorry, the assistant is temporarily unavailable. Please try again shortly.',
+            'status' => 'error',
+        ], 200);
     }
 })->name('chatbot.send');
 
@@ -398,15 +426,6 @@ Route::middleware('company.subscription.active')->group(function () {
     Route::post('/c/{company}/register-tenant', [RegisterController::class, 'registerTenantForCompany'])->name('companies.register.tenant.store');
 });
 Route::post('/forgot-password/request', [PasswordRecoveryRequestController::class, 'store'])->name('password-recovery-requests.store');
-Route::get('/logout', function () {
-    if (auth()->check()) {
-        auth()->logout();
-        request()->session()->invalidate();
-        request()->session()->regenerateToken();
-    }
-
-    return redirect()->route('login');
-});
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Registration Routes
@@ -500,7 +519,21 @@ Route::middleware(['auth', 'prevent-back-history', 'company.subscription.active'
     Route::get('rents/expired-leases', [RentController::class, 'expiredLeases'])->name('rents.expired-leases');
     Route::resource('rents', RentController::class);
     Route::get('payments/{payment}/receipt', [PaymentController::class, 'downloadReceipt'])->name('payments.receipt');
+    Route::get('payments/pay/{rent}', [PaymentController::class, 'payInstructions'])->name('payments.pay');
+    Route::get('payments/pay/{rent}/proof', [PaymentController::class, 'proofForm'])->name('payments.proof');
+    Route::post('payments/pay/{rent}/claim', [PaymentController::class, 'submitClaim'])->name('payments.claim');
     Route::resource('payments', PaymentController::class);
+
+    // Payment claims submitted by tenants from the "I have made payment" button.
+    Route::get('payment-claims', [PaymentClaimController::class, 'index'])->name('payment-claims.index');
+    Route::get('payment-claims/{claim}/proof', [PaymentClaimController::class, 'proof'])->name('payment-claims.proof');
+    Route::post('payment-claims/{claim}/confirm', [PaymentClaimController::class, 'confirm'])->name('payment-claims.confirm');
+    Route::post('payment-claims/{claim}/reject', [PaymentClaimController::class, 'reject'])->name('payment-claims.reject');
+
+    // Designated receiving accounts, managed by the admin from Company Settings.
+    Route::post('payment-accounts', [PaymentAccountController::class, 'store'])->name('payment-accounts.store');
+    Route::patch('payment-accounts/{paymentAccount}', [PaymentAccountController::class, 'update'])->name('payment-accounts.update');
+    Route::delete('payment-accounts/{paymentAccount}', [PaymentAccountController::class, 'destroy'])->name('payment-accounts.destroy');
     Route::get('maintenance/{maintenance}/archive-download', [MaintenanceRequestController::class, 'downloadArchive'])->name('maintenance.archive-download');
     Route::resource('maintenance', MaintenanceRequestController::class);
 

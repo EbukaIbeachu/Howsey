@@ -31,3 +31,9 @@ Thumbs.db
 
 okaro_production.sql
 conf_dbserver.php
+
+# Local development database - never commit application data
+/database/database.sqlite
+/database/*.sqlite
+/database/*.sqlite3
+*.sqlite-journal

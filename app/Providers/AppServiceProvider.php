@@ -83,7 +83,18 @@ class AppServiceProvider extends ServiceProvider
             return Auth::check() && Auth::user()->hasPermission($permission);
         });
 
-        View::composer('*', function ($view) {
+        $hasAnnouncementsTable = Schema::hasTable('announcements');
+        $hasNotificationsTable = Schema::hasTable('notifications');
+        $hasAnnouncementViewsTable = Schema::hasTable('announcement_views');
+
+        View::composer('*', function ($view) use ($hasAnnouncementsTable, $hasNotificationsTable, $hasAnnouncementViewsTable) {
+            static $sharedPayload = null;
+
+            if ($sharedPayload !== null) {
+                $view->with($sharedPayload);
+                return;
+            }
+
             $count = 0;
             $notificationCount = 0;
             $notifications = collect();
@@ -94,12 +105,15 @@ class AppServiceProvider extends ServiceProvider
                 : $currentCompany;
             $branding = app(BrandingService::class)->palette($brandingCompany);
 
-            if (! Schema::hasTable('announcements')) {
-                $view->with('globalAnnouncementCount', $count);
-                $view->with('globalAnnouncementUrl', $announcementUrl);
-                $view->with('globalNotificationCount', $notificationCount);
-                $view->with('globalUnreadNotifications', $notifications);
-                $view->with('branding', $branding);
+            if (! $hasAnnouncementsTable) {
+                $sharedPayload = [
+                    'globalAnnouncementCount' => $count,
+                    'globalAnnouncementUrl' => $announcementUrl,
+                    'globalNotificationCount' => $notificationCount,
+                    'globalUnreadNotifications' => $notifications,
+                    'branding' => $branding,
+                ];
+                $view->with($sharedPayload);
                 return;
             }
 
@@ -107,7 +121,7 @@ class AppServiceProvider extends ServiceProvider
                 $user = Auth::user();
 
                 if ($user->isSuperAdmin()) {
-                    if (Schema::hasTable('notifications')) {
+                    if ($hasNotificationsTable) {
                         $superAdminNotificationsQuery = $user->unreadNotifications()
                             ->where('data->request_type', 'company_application');
 
@@ -118,7 +132,7 @@ class AppServiceProvider extends ServiceProvider
                             ->get();
                     }
                 } else {
-                    if (Schema::hasTable('notifications')) {
+                    if ($hasNotificationsTable) {
                         $notificationCount = $user->unreadNotifications()->count();
                         $notifications = $user->unreadNotifications()
                             ->latest()
@@ -135,7 +149,7 @@ class AppServiceProvider extends ServiceProvider
                         $q->where('users.id', $user->id);
                     });
 
-                    if (Schema::hasTable('announcement_views')) {
+                    if ($hasAnnouncementViewsTable) {
                         $announcementQuery->whereDoesntHave('viewedBy', function ($q) use ($user) {
                             $q->where('users.id', $user->id);
                         });
@@ -151,7 +165,7 @@ class AppServiceProvider extends ServiceProvider
                                 $q->where('users.id', $user->id);
                             });
 
-                        if (Schema::hasTable('announcement_views')) {
+                        if ($hasAnnouncementViewsTable) {
                             $announcementQuery->whereDoesntHave('viewedBy', function ($q) use ($user) {
                                 $q->where('users.id', $user->id);
                             });
@@ -175,7 +189,7 @@ class AppServiceProvider extends ServiceProvider
                                     $q->where('users.id', $user->id);
                                 });
 
-                            if (Schema::hasTable('announcement_views')) {
+                            if ($hasAnnouncementViewsTable) {
                                 $announcementQuery->whereDoesntHave('viewedBy', function ($q) use ($user) {
                                     $q->where('users.id', $user->id);
                                 });
@@ -189,11 +203,15 @@ class AppServiceProvider extends ServiceProvider
                 }
             }
 
-            $view->with('globalAnnouncementCount', $count);
-            $view->with('globalAnnouncementUrl', $announcementUrl);
-            $view->with('globalNotificationCount', $notificationCount);
-            $view->with('globalUnreadNotifications', $notifications);
-            $view->with('branding', $branding);
+            $sharedPayload = [
+                'globalAnnouncementCount' => $count,
+                'globalAnnouncementUrl' => $announcementUrl,
+                'globalNotificationCount' => $notificationCount,
+                'globalUnreadNotifications' => $notifications,
+                'branding' => $branding,
+            ];
+
+            $view->with($sharedPayload);
         });
     }
 }

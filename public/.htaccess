@@ -8,6 +8,11 @@
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
+    # Block direct web access to non-public document folders inside /storage.
+    # Agreements, archives and exports contain personal data and must only be
+    # delivered through authenticated application routes, never by direct URL.
+    RewriteRule ^storage/(agreements|archives|tenant-evictions|maintenance-archives|payment-proofs)(/|$) - [F,L]
+
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]

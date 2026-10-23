@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Payment;
+use App\Models\PaymentAccount;
+use App\Models\PaymentClaim;
 use App\Models\Rent;
 use App\Models\User;
 use App\Models\ManagerEditRequest;
@@ -28,12 +30,17 @@ class PaymentController extends Controller
 
     public function index()
     {
-        abort_unless(auth()->user()->hasPermission('payments.view'), 403);
+        $user = auth()->user();
+        abort_unless($user->hasPermission('payments.view'), 403);
 
         $query = Payment::with(['rent.tenant', 'rent.unit.building', 'creator'])->latest('payment_date');
-        if (auth()->user()->isManager()) {
-            $query->whereHas('rent.unit.building', function ($q) {
-                $q->where('manager_id', auth()->id());
+        if ($user->isTenant()) {
+            $query->whereHas('rent.tenant', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            });
+        } elseif ($user->isManager()) {
+            $query->whereHas('rent.unit.building', function ($q) use ($user) {
+                $q->where('manager_id', $user->id);
             });
         }
         $payments = $query->paginate(20);
@@ -59,6 +66,120 @@ class PaymentController extends Controller
         $selectedRent = $rentId ? Rent::with('payments')->find($rentId) : null;
 
         return view('payments.create', compact('rents', 'selectedRent'));
+    }
+
+    /**
+     * Shows the tenant the workspace's designated receiving accounts so they can
+     * make a transfer, along with the "I have made payment" button.
+     */
+    public function payInstructions(Rent $rent)
+    {
+        $user = auth()->user();
+        $this->authorizeRentAccess($rent, $user);
+
+        $rent->load(['tenant', 'unit.building', 'payments']);
+
+        $accounts = PaymentAccount::active()->ordered()->get();
+        $claims = PaymentClaim::where('rent_id', $rent->id)->latest('created_at')->get();
+
+        return view('tenant.payment-instructions', compact('rent', 'accounts', 'claims'));
+    }
+
+    /**
+     * Dedicated page where the tenant records the transfer they made and
+     * attaches their proof of payment.
+     */
+    public function proofForm(Rent $rent)
+    {
+        $user = auth()->user();
+        $this->authorizeRentAccess($rent, $user);
+
+        $rent->load(['tenant', 'unit.building']);
+
+        $accounts = PaymentAccount::active()->ordered()->get();
+
+        return view('tenant.payment-proof', compact('rent', 'accounts'));
+    }
+
+    /**
+     * Records the tenant's "I have made payment" claim and alerts the admins and
+     * the assigned building manager so they can confirm it.
+     */
+    public function submitClaim(Request $request, Rent $rent)
+    {
+        $user = auth()->user();
+        $this->authorizeRentAccess($rent, $user);
+
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+            'payment_date' => 'required|date',
+            'payment_method' => 'nullable|string|max:50',
+            'reference' => 'nullable|string|max:100',
+            'note' => 'nullable|string|max:1000',
+            'proof' => 'nullable|file|mimes:jpg,jpeg,png,webp,pdf|max:4096',
+        ]);
+
+        $proofPath = $request->hasFile('proof')
+            ? $request->file('proof')->store('payment-proofs', 'private')
+            : null;
+
+        $claim = PaymentClaim::create([
+            'rent_id' => $rent->id,
+            'tenant_id' => $rent->tenant_id,
+            'submitted_by' => $user->id,
+            'amount' => $validated['amount'],
+            'payment_date' => $validated['payment_date'],
+            'payment_method' => $validated['payment_method'] ?? null,
+            'reference' => $validated['reference'] ?? null,
+            'note' => $validated['note'] ?? null,
+            'proof_path' => $proofPath,
+            'status' => PaymentClaim::STATUS_PENDING,
+        ]);
+
+        app(AuditLogService::class)->log('payment_claim_submitted', $claim, null, $claim->toArray());
+
+        $rent->loadMissing(['tenant', 'unit.building.manager']);
+
+        $tenantName = $rent->tenant->full_name ?? $user->name;
+        $unitNumber = $rent->unit->unit_number ?? '';
+        $buildingName = $rent->unit?->building?->name;
+
+        RoleRequestNotifier::notifyAdminsAndManager($rent->unit?->building?->manager, [
+            'title' => 'Payment claim awaiting confirmation',
+            'message' => $tenantName.' says they have paid ₦'.number_format((float) $claim->amount, 2)
+                .($unitNumber ? ' for Unit '.$unitNumber : '')
+                .($buildingName ? ' in '.$buildingName : '')
+                .'. Please confirm the payment.',
+            'url' => route('payment-claims.index'),
+            'request_type' => 'payment_claim',
+            'created_by' => $tenantName,
+            'subject_id' => $claim->id,
+        ], $user->id);
+
+        return redirect()
+            ->route('payments.pay', $rent)
+            ->with('success', 'Thank you. Your payment notification has been sent for confirmation.');
+    }
+
+    private function authorizeRentAccess(Rent $rent, $user): void
+    {
+        if ($user->isAdmin()) {
+            return;
+        }
+
+        if ($user->isManager()) {
+            abort_unless($rent->unit?->building?->manager_id === $user->id, 403, 'Unauthorized action.');
+
+            return;
+        }
+
+        if ($user->isTenant()) {
+            abort_unless($rent->tenant?->user_id === $user->id, 403, 'Unauthorized action.');
+
+            return;
+        }
+
+        abort(403, 'Unauthorized action.');
     }
 
     public function store(Request $request)
@@ -114,7 +235,18 @@ class PaymentController extends Controller
 
     public function show(Payment $payment)
     {
-        abort_unless(auth()->user()->hasPermission('payments.view'), 403);
+        $user = auth()->user();
+        abort_unless($user->hasPermission('payments.view'), 403);
+
+        if ($user->isTenant()) {
+            $payment->loadMissing('rent.tenant');
+            abort_unless(
+                (int) optional(optional($payment->rent)->tenant)->user_id === (int) $user->id,
+                403,
+                'You can only view your own payments.'
+            );
+        }
+
         $payment->load('rent.tenant', 'rent.unit.building', 'creator');
 
         return view('payments.show', compact('payment'));

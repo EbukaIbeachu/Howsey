@@ -205,4 +205,73 @@
         <button type="submit" class="btn btn-primary btn-lg">Save Company Settings</button>
     </div>
 </form>
+
+<div class="row g-4 mt-1">
+    <div class="col-xl-6">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Designated Receiving Accounts</span>
+                <span class="badge bg-secondary">{{ $paymentAccounts->count() }}</span>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">
+                    When a tenant clicks <strong>Pay Now</strong> on their dashboard, these are the accounts they are shown.
+                    Add as many as you need and mark one as primary to have it listed first.
+                </p>
+
+                @forelse($paymentAccounts as $account)
+                    <div class="border rounded p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <div class="fw-semibold">
+                                    {{ $account->display_name }}
+                                    @if($account->is_primary)
+                                        <span class="badge bg-primary ms-1">Primary</span>
+                                    @endif
+                                    @unless($account->is_active)
+                                        <span class="badge bg-secondary ms-1">Inactive</span>
+                                    @endunless
+                                </div>
+                                <div class="text-muted small">{{ $account->account_number }} &middot; {{ $account->account_name }}</div>
+                            </div>
+                        </div>
+
+                        <form method="POST" action="{{ route('payment-accounts.update', $account) }}">
+                            @csrf
+                            @method('PATCH')
+                            @include('companies.partials.payment-account-fields', ['account' => $account, 'uid' => $account->id])
+                            <div class="d-flex gap-2 mt-3">
+                                <button type="submit" class="btn btn-sm btn-primary">Save Changes</button>
+                            </div>
+                        </form>
+
+                        <form method="POST" action="{{ route('payment-accounts.destroy', $account) }}" class="mt-2" onsubmit="return confirm('Remove {{ $account->display_name }}? Tenants will no longer see it.');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i> Remove Account
+                            </button>
+                        </form>
+                    </div>
+                @empty
+                    <div class="alert alert-light border small">
+                        No receiving account has been added yet. Until you add one, tenants who click <strong>Pay Now</strong> will
+                        be told to contact the office for payment details.
+                    </div>
+                @endforelse
+
+                <hr>
+
+                <h6 class="fw-semibold">Add Another Account</h6>
+                <form method="POST" action="{{ route('payment-accounts.store') }}">
+                    @csrf
+                    @include('companies.partials.payment-account-fields', ['account' => null, 'uid' => 'new'])
+                    <button type="submit" class="btn btn-sm btn-primary mt-3">
+                        <i class="bi bi-plus-lg"></i> Add Receiving Account
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection

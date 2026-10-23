@@ -18,7 +18,7 @@ class MigrateSensitiveFilesToPrivate extends Command
         $movedCount = 0;
         $skippedCount = 0;
 
-        foreach (['agreements', 'archives'] as $directory) {
+        foreach (['agreements', 'archives', 'maintenance-archives', 'tenant-evictions'] as $directory) {
             foreach ($sourceDisk->allFiles($directory) as $path) {
                 if ($targetDisk->exists($path)) {
                     $sourceDisk->delete($path);

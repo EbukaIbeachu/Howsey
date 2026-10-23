@@ -122,8 +122,13 @@ class DashboardController extends Controller
         $isManager = $user->isManager();
         $buildingIds = $this->getManagedBuildingIds($user, $isManager);
 
-        $recentPayments = $this->recentPaymentsQuery($isManager, $buildingIds)
-            ->paginate(15);
+        $paymentsQuery = $this->recentPaymentsQuery($isManager, $buildingIds);
+        if ($user->isTenant()) {
+            $paymentsQuery->whereHas('rent.tenant', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            });
+        }
+        $recentPayments = $paymentsQuery->paginate(15);
 
         return view('dashboard.recent-payments', compact('recentPayments'));
     }
@@ -139,7 +144,7 @@ class DashboardController extends Controller
 
         $isManager = $user->isManager();
         $buildingIds = $this->getManagedBuildingIds($user, $isManager);
-        $overdueRents = $this->overdueRentsCollection($isManager, $buildingIds);
+        $overdueRents = $this->overdueRentsCollection($isManager, $buildingIds, $user);
 
         return view('dashboard.overdue-rents', compact('overdueRents'));
     }
@@ -558,7 +563,7 @@ class DashboardController extends Controller
         return $query;
     }
 
-    private function overdueRentsCollection(bool $isManager, $buildingIds)
+    private function overdueRentsCollection(bool $isManager, $buildingIds, $user = null)
     {
         $query = Rent::active()
             ->with(['tenant', 'unit.building']);
@@ -566,6 +571,12 @@ class DashboardController extends Controller
         if ($isManager) {
             $query->whereHas('unit.building', function ($q) use ($buildingIds) {
                 $q->whereIn('id', $buildingIds);
+            });
+        }
+
+        if ($user && $user->isTenant()) {
+            $query->whereHas('tenant', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
             });
         }
 

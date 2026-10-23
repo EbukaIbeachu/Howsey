@@ -6,6 +6,8 @@ use App\Models\Company;
 use App\Support\CurrentCompany;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -34,6 +36,15 @@ class AuthController extends Controller
             'password' => ['required'],
             'workspace' => [$rootCompanyAdminAccess ? 'required' : 'nullable', 'string', 'max:255'],
         ]);
+        $throttleKey = Str::transliterate(Str::lower($validated['email']).'|'.$request->ip());
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            return back()->withErrors([
+                'email' => 'Too many login attempts. Please try again in '
+                    .ceil(RateLimiter::availableIn($throttleKey) / 60).' minute(s).',
+            ])->onlyInput('email');
+        }
+
         $credentials = [
             'email' => $validated['email'],
             'password' => $validated['password'],
@@ -60,6 +71,8 @@ class AuthController extends Controller
         }
 
         if (Auth::attempt($credentials)) {
+            RateLimiter::clear($throttleKey);
+
             if (! Auth::user()->is_active) {
                 Auth::logout();
 
@@ -119,6 +132,8 @@ class AuthController extends Controller
 
             return redirect()->intended($destination);
         }
+
+        RateLimiter::hit($throttleKey, 60);
 
         return back()->withErrors([
             'email' => 'The provided account ID and password do not match our records.',

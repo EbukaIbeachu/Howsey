@@ -96,7 +96,7 @@
             @if($rent)
             <div class="card-footer d-grid gap-2">
                 @if($rent->balance > 0)
-                    <a href="{{ route('payments.create', ['rent_id' => $rent->id]) }}" class="btn btn-primary">Pay Now</a>
+                    <a href="{{ route('payments.pay', $rent) }}" class="btn btn-primary">Pay Now</a>
                 @endif
                 <a href="{{ route('rents.agreement', $rent) }}" class="btn btn-outline-secondary">
                     <i class="bi bi-file-text"></i> View Rental Agreement
@@ -119,7 +119,6 @@
                             <tr>
                                 <th>Date</th>
                                 <th>Amount</th>
-                                <th>Due Date</th>
                                 <th>Method</th>
                                 <th>Receipt</th>
                             </tr>
@@ -129,7 +128,6 @@
                             <tr>
                                 <td>{{ $payment->payment_date->format('M d, Y') }}</td>
                                 <td class="text-success fw-bold">₦{{ number_format($payment->amount, 2) }}</td>
-                                <td>{{ $payment->due_date ? $payment->due_date->format('M d, Y') : 'N/A' }}</td>
                                 <td>{{ $payment->payment_method ?? 'N/A' }}</td>
                                 <td>
                                     @if(strtoupper((string) $payment->status) === 'COMPLETED')
@@ -143,7 +141,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="text-center py-3">No payments recorded.</td>
+                                <td colspan="4" class="text-center py-3">No payments recorded.</td>
                             </tr>
                             @endforelse
                         </tbody>

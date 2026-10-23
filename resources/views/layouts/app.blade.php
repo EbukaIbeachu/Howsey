@@ -10,6 +10,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 
     <!-- Styles -->
@@ -34,6 +35,9 @@
         $roleWatermarkText = $usesRoleWatermark
             ? \App\Support\AccountIdentityService::watermarkTextFor(Auth::user())
             : '';
+        $roleWatermarkTile = $usesRoleWatermark
+            ? \App\Support\AccountIdentityService::watermarkTileUrl($roleWatermarkText)
+            : '';
         $superAdminViewCompanies = $superAdminViewCompanies ?? collect();
         $showSuperAdminCompanySwitcher = Auth::check()
             && Auth::user()->isSuperAdmin()
@@ -47,7 +51,7 @@
         $enablePwaUi = true;
         $enablePwaInstallUi = $enablePwaUi;
         $enablePwaNotificationUi = $enablePwaUi && Auth::check();
-        $shellAssetVersion = '20261012-receipt-png-mobile';
+        $shellAssetVersion = '20261020-watermark-visible';
         $shortcutRoutes = Auth::check()
             ? [
                 'home' => url('/'),
@@ -90,6 +94,10 @@
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <link rel="icon" href="{{ $branding['pwa_icon_url'] ?? url('/howsey.png') }}" type="image/png">
         <link rel="apple-touch-icon" sizes="512x512" href="{{ $branding['pwa_icon_url'] ?? url('/howsey.png') }}">
+    @endif
+
+    @if(request()->routeIs('login') || request()->routeIs('companies.login'))
+        <link rel="preload" href="{{ asset('assets/images/wallpaper.jpeg') }}" as="image" fetchpriority="high">
     @endif
 
     <link rel="preload" href="{{ asset('assets/css/app-shell.css') }}?v={{ $shellAssetVersion }}" as="style">
@@ -424,13 +432,21 @@
                         @endpermission
                         @endif
 
+                        @if(!Auth::user()->isSuperAdmin() && (Auth::user()->isAdmin() || Auth::user()->isManager()) && Route::has('payment-claims.index'))
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('payment-claims.*') ? 'active' : '' }}" href="{{ route('payment-claims.index') }}">
+                                <i class="bi bi-receipt-cutoff me-2"></i> Payment Claims
+                            </a>
+                        </li>
+                        @endif
+
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('messages.*') ? 'active' : '' }}" href="{{ route('messages.index') }}">
                                 <i class="bi bi-chat-dots me-2"></i> Messages
                             </a>
                         </li>
 
-                        @if(!Auth::user()->isSuperAdmin())
+                        @if(!Auth::user()->isSuperAdmin() && !Auth::user()->isTenant())
                         @permission('maintenance.view')
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('maintenance.*') ? 'active' : '' }}" href="{{ route('maintenance.index') }}">
@@ -478,7 +494,7 @@
                             </li>
                         @endif
 
-                        @if(!Auth::user()->isSuperAdmin())
+                        @if(!Auth::user()->isSuperAdmin() && (Auth::user()->isAdmin() || Auth::user()->isAccountant()))
                         @permission('accounting.view')
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('accounting.*') ? 'active' : '' }}" href="{{ route('accounting.index') }}">
@@ -528,7 +544,7 @@
             @endauth
 
             <!-- Main Content -->
-            <main class="@auth main-content @else col-12 @endauth {{ $usesRoleWatermark ? 'role-watermarked' : '' }}" @if($usesRoleWatermark) data-watermark="{{ $roleWatermarkText }}" @endif>
+            <main class="@auth main-content @else col-12 @endauth {{ $usesRoleWatermark ? 'role-watermarked' : '' }}" @if($usesRoleWatermark) data-watermark="{{ $roleWatermarkText }}" style="--wm-tile: {{ $roleWatermarkTile }}" @endif>
                 @auth
                 <!-- Desktop Collapsed Header -->
                 <div id="desktopHeader" class="app-sticky-header d-none d-lg-flex align-items-center mb-0 pb-2 border-bottom">

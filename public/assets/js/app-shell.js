@@ -1168,6 +1168,68 @@
 
                 window.Loader.show();
             });
+
+            (function startLiveWatermark() {
+                const target = document.querySelector('.role-watermarked[data-watermark]');
+
+                if (!target) {
+                    return;
+                }
+
+                const pattern = /(\d{4}-\d{2}-\d{2} \d{2}:\d{2})$/;
+
+                const stamp = function () {
+                    const parts = new Intl.DateTimeFormat('en-GB', {
+                        timeZone: 'Africa/Lagos',
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hourCycle: 'h23'
+                    }).formatToParts(new Date());
+
+                    const value = function (type) {
+                        const part = parts.find(function (item) {
+                            return item.type === type;
+                        });
+
+                        return part ? part.value : '';
+                    };
+
+                    return value('year') + '-' + value('month') + '-' + value('day') + ' ' + value('hour') + ':' + value('minute');
+                };
+
+                const tile = function (text) {
+                    const escaped = text
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;');
+
+                    const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="960" height="220" viewBox="0 0 960 220">'
+                        + '<text x="24" y="138" fill="#000" fill-opacity="0.14" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800">'
+                        + escaped
+                        + '</text></svg>';
+
+                    return "url('data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg) + "')";
+                };
+
+                const refresh = function () {
+                    const current = target.getAttribute('data-watermark') || '';
+
+                    if (!pattern.test(current)) {
+                        return;
+                    }
+
+                    const next = current.replace(pattern, stamp());
+
+                    target.setAttribute('data-watermark', next);
+                    target.style.setProperty('--wm-tile', tile(next));
+                };
+
+                refresh();
+                window.setInterval(refresh, 20000);
+            })();
         });
     });
 

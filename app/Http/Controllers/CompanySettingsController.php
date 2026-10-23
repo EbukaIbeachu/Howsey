@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DocumentTemplate;
 use App\Models\NotificationTemplate;
+use App\Models\PaymentAccount;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -56,7 +57,10 @@ class CompanySettingsController extends Controller
             'documentTemplates',
         ])->firstOrFail();
 
-        return view('companies.settings', compact('company'));
+        return view('companies.settings', [
+            'company' => $company,
+            'paymentAccounts' => PaymentAccount::ordered()->get(),
+        ]);
     }
 
     public function update(Request $request)

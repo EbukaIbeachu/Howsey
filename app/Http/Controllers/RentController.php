@@ -20,18 +20,23 @@ class RentController extends Controller
 {
     public function index(Request $request)
     {
+        $user = auth()->user();
         $status = $request->query('status', 'ACTIVE'); // Default to ACTIVE
 
         $query = Rent::with(['tenant', 'unit.building', 'creator']);
 
-        if ($status && $status !== 'ALL') {
-            $query->where('status', $status);
+        if ($user->isTenant()) {
+            $query->whereHas('tenant', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            });
+        } elseif ($user->isManager()) {
+            $query->whereHas('unit.building', function ($q) use ($user) {
+                $q->where('manager_id', $user->id);
+            });
         }
 
-        if (auth()->user()->isManager()) {
-            $query->whereHas('unit.building', function ($q) {
-                $q->where('manager_id', auth()->id());
-            });
+        if ($status && $status !== 'ALL') {
+            $query->where('status', $status);
         }
 
         $rents = $query->paginate(15);
@@ -46,15 +51,21 @@ class RentController extends Controller
 
     public function expiredLeases(Request $request)
     {
+        $user = auth()->user();
+
         $query = Rent::with(['tenant', 'unit.building', 'creator'])
             ->where('status', 'EXPIRED')
             ->whereHas('tenant', function ($tenantQuery) {
                 $tenantQuery->where('active', false);
             });
 
-        if (auth()->user()->isManager()) {
-            $query->whereHas('unit.building', function ($q) {
-                $q->where('manager_id', auth()->id());
+        if ($user->isTenant()) {
+            $query->whereHas('tenant', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            });
+        } elseif ($user->isManager()) {
+            $query->whereHas('unit.building', function ($q) use ($user) {
+                $q->where('manager_id', $user->id);
             });
         }
 

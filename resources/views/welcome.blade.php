@@ -524,7 +524,7 @@
                 <div class="portal-links-card-mobile d-md-none mt-4 bg-white bg-opacity-10 border border-light border-opacity-25 rounded-4 p-3 text-start">
                     <div class="text-center">
                         <div class="small text-white-50 text-uppercase fw-semibold mb-2">Scan Company Homepage</div>
-                        <img src="{{ $portalQrUrl }}" alt="{{ $brandName }} workspace QR code" class="portal-qr-image img-fluid bg-white rounded-3 p-2">
+                        <img src="{{ $portalQrUrl }}" alt="{{ $brandName }} workspace QR code" class="portal-qr-image img-fluid bg-white rounded-3 p-2" loading="lazy" decoding="async">
                         <div class="small text-white-50 mt-2">Scan to open {{ $brandName }} on this device.</div>
                     </div>
                     <div class="mt-3 pt-3 border-top border-light border-opacity-25">
@@ -568,7 +568,7 @@
                 <div class="small"><strong>Tenant Registration:</strong> <a href="{{ route('companies.register.tenant', $portalCompany->slug) }}" class="text-white">{{ route('companies.register.tenant', $portalCompany->slug) }}</a></div>
                 <div class="mt-3 pt-3 border-top border-light border-opacity-25 text-center">
                     <div class="small text-white-50 text-uppercase fw-semibold mb-2">Scan Company Homepage</div>
-                    <img src="{{ $portalQrUrl }}" alt="{{ $brandName }} workspace QR code" class="portal-qr-image img-fluid bg-white rounded-3 p-2">
+                    <img src="{{ $portalQrUrl }}" alt="{{ $brandName }} workspace QR code" class="portal-qr-image img-fluid bg-white rounded-3 p-2" loading="lazy" decoding="async">
                     <div class="small text-white-50 mt-2">Scan to open {{ $brandName }} on this device.</div>
                 </div>
             </div>

@@ -37,6 +37,7 @@ class Kernel extends HttpKernel
      * @var array<int, class-string|string>
      */
     protected $middleware = [
+        \App\Http\Middleware\SecurityHeaders::class,
         // \App\Http\Middleware\TrustProxies::class,
         HandleCors::class,
         ValidatePostSize::class,
@@ -55,7 +56,7 @@ class Kernel extends HttpKernel
             AddQueuedCookiesToResponse::class,
             StartSession::class,
             ShareErrorsFromSession::class,
-            // \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+            \App\Http\Middleware\VerifyCsrfToken::class,
             ResolveCompanyContext::class,
             SubstituteBindings::class,
         ],
