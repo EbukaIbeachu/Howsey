@@ -1,144 +1,134 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2" id="rents-header">{{ $pageTitle ?? 'Rental Agreements' }}</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <button class="btn btn-sm btn-outline-info me-2" onclick="startTour()">
-            <i class="bi bi-question-circle"></i> Help
-        </button>
-        <a href="{{ route('rents.create') }}" class="btn btn-sm btn-primary" id="add-rent-btn">
-            <i class="bi bi-plus-lg"></i> Create Agreement
-        </a>
-    </div>
-</div>
+@php
+    $emptyText = ($pageTitle ?? 'Rental Agreements') === 'Expired Leases'
+        ? 'No archived expired leases found.'
+        : 'No rental agreements found. Click "Create Agreement" to add one.';
+@endphp
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
-            <div class="btn-group w-100 w-md-auto">
-                <a href="{{ route('rents.index', ['status' => 'ACTIVE']) }}" class="btn btn-sm {{ $status === 'ACTIVE' ? 'btn-primary' : 'btn-outline-primary' }}">Active</a>
-                <a href="{{ route('rents.index', ['status' => 'TERMINATED']) }}" class="btn btn-sm {{ $status === 'TERMINATED' ? 'btn-primary' : 'btn-outline-primary' }}">Terminated</a>
-                <a href="{{ route('rents.index', ['status' => 'ALL']) }}" class="btn btn-sm {{ $status === 'ALL' ? 'btn-primary' : 'btn-outline-primary' }}">All</a>
-                <a href="{{ route('rents.expired-leases') }}" class="btn btn-sm {{ $status === 'EXPIRED_ARCHIVED' ? 'btn-primary' : 'btn-outline-primary' }}">Expired Leases</a>
-            </div>
-            <input type="text" id="rentSearch" class="form-control w-100 w-md-auto" placeholder="Search agreements...">
+<x-ui.page-header :title="$pageTitle ?? 'Rental Agreements'" id="rents-header">
+    <x-slot:actions>
+        <x-ui.button variant="outline-info" size="sm" icon="bi bi-question-circle" onclick="startTour()">Help</x-ui.button>
+        <x-ui.button variant="primary" size="sm" icon="bi bi-plus-lg" :href="route('rents.create')" id="add-rent-btn">Create Agreement</x-ui.button>
+    </x-slot:actions>
+</x-ui.page-header>
+
+<x-ui.card>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
+        <div class="ui-btn-group">
+            <x-ui.button size="sm" :variant="$status === 'ACTIVE' ? 'primary' : 'outline-primary'" :href="route('rents.index', ['status' => 'ACTIVE'])">Active</x-ui.button>
+            <x-ui.button size="sm" :variant="$status === 'TERMINATED' ? 'primary' : 'outline-primary'" :href="route('rents.index', ['status' => 'TERMINATED'])">Terminated</x-ui.button>
+            <x-ui.button size="sm" :variant="$status === 'ALL' ? 'primary' : 'outline-primary'" :href="route('rents.index', ['status' => 'ALL'])">All</x-ui.button>
+            <x-ui.button size="sm" :variant="$status === 'EXPIRED_ARCHIVED' ? 'primary' : 'outline-primary'" :href="route('rents.expired-leases')">Expired Leases</x-ui.button>
         </div>
-        <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle" id="rentsTable">
-                <thead>
-                    <tr>
-                        <th>Tenant</th>
-                        <th class="d-none d-md-table-cell">Unit</th>
-                        <th class="d-none d-md-table-cell">Period</th>
-                        <th>Amount</th>
-                        @if(Auth::user()->isAdmin())
-                        <th class="d-none d-md-table-cell">Created By</th>
-                        @endif
-                        <th class="d-none d-md-table-cell">Status</th>
-                        <th class="text-end">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($rents as $rent)
-                    <tr class="clickable-row @if($rent->status === 'ACTIVE') table-success @elseif($rent->status === 'EXPIRED') table-warning @else table-secondary @endif" data-href="{{ route('rents.agreement', $rent) }}" style="cursor: pointer;">
-                        <td>
-                            <a href="{{ route('rents.show', $rent) }}" class="text-decoration-none fw-bold">
-                                {{ $rent->tenant->full_name }}
-                            </a>
-                        </td>
-                        <td class="d-none d-md-table-cell">
-                            @if($rent->unit)
-                                <a href="{{ route('units.show', $rent->unit) }}" class="text-decoration-none text-dark">
-                                    {{ $rent->unit->unit_number }}
-                                </a>
-                                <br>
-                                <small class="text-muted">{{ $rent->unit->building->name }}</small>
-                            @else
-                                <span class="fst-italic text-muted">Unit Removed</span>
-                            @endif
-                        </td>
-                        <td class="d-none d-md-table-cell">
-                            {{ $rent->lease_period_label }} <br>
-                            <small class="text-muted">{{ $rent->due_schedule_label }}</small>
-                        </td>
-                        <td>
-                            ₦{{ number_format($rent->annual_amount, 2) }}
-                            <br>
-                            <small class="text-muted">{{ $rent->rent_duration_label }} {{ $rent->rent_interval_suffix }}</small>
-                        </td>
-                        @if(Auth::user()->isAdmin())
-                        <td class="d-none d-md-table-cell">
-                            @if($rent->creator)
-                                <div class="d-flex align-items-center">
-                                    <div class="ms-2">
-                                        <div class="fw-bold small">{{ $rent->creator->name }}</div>
-                                        <div class="text-muted" style="font-size: 0.75rem;">{{ $rent->creator->role->name ?? 'User' }}</div>
-                                    </div>
-                                </div>
-                            @else
-                                <span class="text-muted small fst-italic">System</span>
-                            @endif
-                        </td>
-                        @endif
-                        <td class="d-none d-md-table-cell">
-                            @if($rent->status === 'ACTIVE')
-                                <span class="badge bg-success">Active</span>
-                            @else
-                                <span class="badge bg-secondary">{{ ucfirst(strtolower($rent->status)) }}</span>
-                            @endif
-                        </td>
-                        <td class="text-end">
-                            <div class="btn-group">
-                                <a href="{{ route('rents.agreement', $rent) }}" class="btn btn-sm btn-outline-dark" title="Download Agreement" target="_blank">
-                                    <i class="bi bi-file-earmark-pdf"></i>
-                                </a>
-                                <a href="{{ route('rents.show', $rent) }}" class="btn btn-sm btn-outline-secondary" title="View">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                @if(Auth::user()->isManager())
-                                    @include('partials.manager-edit-request-button', [
-                                        'recordType' => 'rent',
-                                        'recordId' => $rent->id,
-                                        'recordLabel' => 'Rental Agreement #'.$rent->id,
-                                        'buttonClass' => 'btn btn-sm btn-outline-warning',
-                                        'buttonText' => 'Request Edit',
-                                        'iconClass' => 'bi bi-pencil-square',
-                                    ])
-                                @else
-                                    <a href="{{ route('rents.edit', $rent) }}" class="btn btn-sm btn-outline-primary" title="Edit">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                @endif
-                                @if(Auth::user()->isAdmin())
-                                <form action="{{ route('rents.destroy', $rent) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this agreement?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="7" class="text-center py-4 text-muted">
-                            <i class="bi bi-file-earmark-text fs-1 d-block mb-2"></i>
-                            {{ ($pageTitle ?? 'Rental Agreements') === 'Expired Leases' ? 'No archived expired leases found.' : 'No rental agreements found. Click "Create Agreement" to add one.' }}
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        
-        <div class="mt-3">
-            {{ $rents->links() }}
-        </div>
+        <input type="text" id="rentSearch" class="form-control w-100 w-md-auto" placeholder="Search agreements...">
     </div>
-</div>
+
+    <x-ui.table id="rentsTable" :striped="true">
+        <thead>
+            <tr>
+                <th scope="col">Tenant</th>
+                <th scope="col" class="d-none d-md-table-cell">Unit</th>
+                <th scope="col" class="d-none d-md-table-cell">Period</th>
+                <th scope="col">Amount</th>
+                @if(Auth::user()->isAdmin())
+                <th scope="col" class="d-none d-md-table-cell">Created By</th>
+                @endif
+                <th scope="col" class="d-none d-md-table-cell">Status</th>
+                <th scope="col" class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($rents as $rent)
+            <tr class="clickable-row @if($rent->status === 'ACTIVE') ui-row--success @elseif($rent->status === 'EXPIRED') ui-row--warning @else ui-row--neutral @endif" data-href="{{ route('rents.agreement', $rent) }}" style="cursor: pointer;">
+                <td>
+                    <a href="{{ route('rents.show', $rent) }}" class="text-decoration-none fw-bold">
+                        {{ $rent->tenant->full_name }}
+                    </a>
+                </td>
+                <td class="d-none d-md-table-cell">
+                    @if($rent->unit)
+                        <a href="{{ route('units.show', $rent->unit) }}" class="text-decoration-none text-dark">
+                            {{ $rent->unit->unit_number }}
+                        </a>
+                        <br>
+                        <small class="text-muted">{{ $rent->unit->building->name }}</small>
+                    @else
+                        <span class="fst-italic text-muted">Unit Removed</span>
+                    @endif
+                </td>
+                <td class="d-none d-md-table-cell">
+                    {{ $rent->lease_period_label }} <br>
+                    <small class="text-muted">{{ $rent->due_schedule_label }}</small>
+                </td>
+                <td>
+                    ₦{{ number_format($rent->annual_amount, 2) }}
+                    <br>
+                    <small class="text-muted">{{ $rent->rent_duration_label }} {{ $rent->rent_interval_suffix }}</small>
+                </td>
+                @if(Auth::user()->isAdmin())
+                <td class="d-none d-md-table-cell">
+                    @if($rent->creator)
+                        <div class="d-flex align-items-center">
+                            <div class="ms-2">
+                                <div class="fw-bold small">{{ $rent->creator->name }}</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">{{ $rent->creator->role->name ?? 'User' }}</div>
+                            </div>
+                        </div>
+                    @else
+                        <span class="text-muted small fst-italic">System</span>
+                    @endif
+                </td>
+                @endif
+                <td class="d-none d-md-table-cell">
+                    @if($rent->status === 'ACTIVE')
+                        <x-ui.status-badge tone="success" label="Active" />
+                    @else
+                        <x-ui.status-badge tone="neutral" :label="ucfirst(strtolower($rent->status))" />
+                    @endif
+                </td>
+                <td class="text-end">
+                    <div class="ui-btn-group">
+                        <x-ui.icon-button label="Download Agreement" icon="bi bi-file-earmark-pdf" size="sm" :href="route('rents.agreement', $rent)" target="_blank" />
+                        <x-ui.icon-button label="View" icon="bi bi-eye" size="sm" :href="route('rents.show', $rent)" />
+                        @if(Auth::user()->isManager())
+                            @include('partials.manager-edit-request-button', [
+                                'recordType' => 'rent',
+                                'recordId' => $rent->id,
+                                'recordLabel' => 'Rental Agreement #'.$rent->id,
+                                'buttonClass' => 'btn btn-sm btn-outline-warning',
+                                'buttonText' => 'Request Edit',
+                                'iconClass' => 'bi bi-pencil-square',
+                            ])
+                        @else
+                            <x-ui.icon-button label="Edit" icon="bi bi-pencil" size="sm" :href="route('rents.edit', $rent)" />
+                        @endif
+                        @if(Auth::user()->isAdmin())
+                        <form action="{{ route('rents.destroy', $rent) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this agreement?');">
+                            @csrf
+                            @method('DELETE')
+                            <x-ui.icon-button type="submit" variant="danger" size="sm" icon="bi bi-trash" label="Delete" />
+                        </form>
+                        @endif
+                    </div>
+                </td>
+            </tr>
+            @empty
+            <x-ui.table.empty-state
+                :colspan="7"
+                icon="bi bi-file-earmark-text"
+                title="No rental agreements found"
+                :text="$emptyText"
+            />
+            @endforelse
+        </tbody>
+    </x-ui.table>
+
+    <div class="mt-3">
+        {{ $rents->links() }}
+    </div>
+</x-ui.card>
 
 @push('scripts')
 <script>

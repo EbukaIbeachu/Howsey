@@ -1,105 +1,92 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Units</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ route('units.create') }}" class="btn btn-sm btn-primary">
-            <i class="bi bi-plus-lg"></i> Add Unit
-        </a>
-    </div>
-</div>
+<x-ui.page-header title="Units">
+    <x-slot:actions>
+        <x-ui.button variant="primary" size="sm" icon="bi bi-plus-lg" :href="route('units.create')">Add Unit</x-ui.button>
+    </x-slot:actions>
+</x-ui.page-header>
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Unit</th>
-                        <th>Building</th>
-                        <th>Floor</th>
-                        <th>Type</th>
-                        <th>Status</th>
-                        <th class="text-end">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($units as $unit)
-                    <tr>
-                        <td>
-                            <a href="{{ route('units.show', $unit) }}" class="text-decoration-none fw-bold">
-                                {{ $unit->unit_number }}
-                            </a>
-                        </td>
-                        <td>
-                            <a href="{{ route('buildings.show', $unit->building) }}" class="text-decoration-none text-dark">
-                                {{ $unit->building->name }}
-                            </a>
-                        </td>
-                        <td>{{ $unit->floor ?? '-' }}</td>
-                        <td>
-                            @if($unit->unit_type === 'WAREHOUSE')
-                                <span class="badge bg-info text-dark">Warehouse</span>
-                            @else
-                                {{ $unit->bedrooms }} Bed / {{ $unit->bathrooms }} Bath
-                            @endif
-                        </td>
-                        <td>
-                            @if($unit->status === 'OCCUPIED')
-                                <span class="badge bg-success">Occupied</span>
-                            @elseif($unit->status === 'MAINTENANCE')
-                                <span class="badge bg-warning text-dark">Maintenance</span>
-                            @else
-                                <span class="badge bg-secondary">Available</span>
-                            @endif
-                        </td>
-                        <td class="text-end">
-                            <div class="d-flex justify-content-end flex-wrap gap-1">
-                                <a href="{{ route('units.show', $unit) }}" class="btn btn-sm btn-outline-secondary" title="View">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                @if(Auth::user()->isManager())
-                                    @include('partials.manager-edit-request-button', [
-                                        'recordType' => 'unit',
-                                        'recordId' => $unit->id,
-                                        'recordLabel' => 'Unit '.$unit->unit_number.' in '.$unit->building->name,
-                                        'buttonClass' => 'btn btn-sm btn-outline-warning',
-                                        'buttonText' => 'Request Edit',
-                                        'iconClass' => 'bi bi-pencil-square',
-                                    ])
-                                @else
-                                    <a href="{{ route('units.edit', $unit) }}" class="btn btn-sm btn-outline-primary" title="Edit">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                @endif
-                                @if(Auth::user()->isAdmin())
-                                    <form action="{{ route('units.destroy', $unit) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this unit?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="6" class="text-center py-4 text-muted">
-                            <i class="bi bi-door-closed fs-1 d-block mb-2"></i>
-                            No units found. Click "Add Unit" to create one.
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        
-        <div class="mt-3">
-            {{ $units->links() }}
-        </div>
+<x-ui.card>
+    <x-ui.table :striped="true">
+        <thead>
+            <tr>
+                <th scope="col">Unit</th>
+                <th scope="col">Building</th>
+                <th scope="col">Floor</th>
+                <th scope="col">Type</th>
+                <th scope="col">Status</th>
+                <th scope="col" class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($units as $unit)
+            <tr class="@if($unit->status === 'OCCUPIED') ui-row--success @elseif($unit->status === 'MAINTENANCE') ui-row--warning @else ui-row--neutral @endif">
+                <td>
+                    <a href="{{ route('units.show', $unit) }}" class="text-decoration-none fw-bold">
+                        {{ $unit->unit_number }}
+                    </a>
+                </td>
+                <td>
+                    <a href="{{ route('buildings.show', $unit->building) }}" class="text-decoration-none text-dark">
+                        {{ $unit->building->name }}
+                    </a>
+                </td>
+                <td>{{ $unit->floor ?? '-' }}</td>
+                <td>
+                    @if($unit->unit_type === 'WAREHOUSE')
+                        <span class="badge bg-info text-dark">Warehouse</span>
+                    @else
+                        {{ $unit->bedrooms }} Bed / {{ $unit->bathrooms }} Bath
+                    @endif
+                </td>
+                <td>
+                    @if($unit->status === 'OCCUPIED')
+                        <x-ui.status-badge tone="success" label="Occupied" />
+                    @elseif($unit->status === 'MAINTENANCE')
+                        <x-ui.status-badge tone="warning" label="Maintenance" />
+                    @else
+                        <x-ui.status-badge tone="neutral" label="Available" />
+                    @endif
+                </td>
+                <td class="text-end">
+                    <div class="ui-btn-group">
+                        <x-ui.icon-button label="View" icon="bi bi-eye" size="sm" :href="route('units.show', $unit)" />
+                        @if(Auth::user()->isManager())
+                            @include('partials.manager-edit-request-button', [
+                                'recordType' => 'unit',
+                                'recordId' => $unit->id,
+                                'recordLabel' => 'Unit '.$unit->unit_number.' in '.$unit->building->name,
+                                'buttonClass' => 'btn btn-sm btn-outline-warning',
+                                'buttonText' => 'Request Edit',
+                                'iconClass' => 'bi bi-pencil-square',
+                            ])
+                        @else
+                            <x-ui.icon-button label="Edit" icon="bi bi-pencil" size="sm" :href="route('units.edit', $unit)" />
+                        @endif
+                        @if(Auth::user()->isAdmin())
+                            <form action="{{ route('units.destroy', $unit) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this unit?');">
+                                @csrf
+                                @method('DELETE')
+                                <x-ui.icon-button type="submit" variant="danger" size="sm" icon="bi bi-trash" label="Delete" />
+                            </form>
+                        @endif
+                    </div>
+                </td>
+            </tr>
+            @empty
+            <x-ui.table.empty-state
+                :colspan="6"
+                icon="bi bi-door-closed"
+                title="No units found"
+                text='Click "Add Unit" to create one.'
+            />
+            @endforelse
+        </tbody>
+    </x-ui.table>
+
+    <div class="mt-3">
+        {{ $units->links() }}
     </div>
-</div>
+</x-ui.card>
 @endsection
