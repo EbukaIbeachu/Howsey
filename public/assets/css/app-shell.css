@@ -110,17 +110,6 @@ body {
         --shell-table-head-color: #495057;
         --shell-hover-bg: rgba(var(--brand-primary-rgb), 0.08);
     }
-    body.theme-autumn {
-        --system-overlay-start: rgba(255, 229, 191, 0.60);
-        --system-overlay-end: rgba(255, 183, 121, 0.72);
-        --system-text-color: #31210f;
-        --shell-header-bg: rgba(255, 245, 231, 0.88);
-        --shell-main-bg: rgba(255, 247, 238, 0.44);
-        --shell-card-bg: rgba(255, 251, 245, 0.92);
-        --shell-table-head-bg: rgba(255, 240, 222, 0.94);
-        --shell-table-head-color: #7a4420;
-        --shell-hover-bg: rgba(217, 119, 6, 0.10);
-    }
     body.theme-dark {
         --system-overlay-start: rgba(255, 255, 255, 0.55);
         --system-overlay-end: rgba(var(--brand-primary-rgb), 0.28);
@@ -985,3 +974,79 @@ html.app-shell-loading .howsey-loader-overlay,
         scroll-behavior: auto !important;
     }
 }
+
+/* ==========================================================================
+   App shell — sidebar groups and topbar (Phase 4 — frontend redesign)
+   ========================================================================== */
+
+/* --- Sidebar navigation groups (x-shell.nav-group) ----------------------- */
+
+.nav-group + .nav-group {
+    margin-top: 0.9rem;
+}
+
+.nav-group-title {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.3rem 1.25rem 0.35rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    /* Readable on the tinted sidebar in both light and dark themes. */
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.nav-group-title .bi {
+    font-size: 0.875rem;
+    opacity: 0.85;
+}
+
+/* Align the label text of every entry regardless of its icon's width. */
+.nav-group .nav-link {
+    display: flex;
+    align-items: center;
+}
+
+.nav-group .nav-link .bi {
+    width: 1.15rem;
+    text-align: center;
+    opacity: 0.92;
+}
+
+/* --- Topbar ------------------------------------------------------------- */
+
+.topbar-actions {
+    min-width: 0;
+}
+
+.topbar-actions > * {
+    flex: 0 0 auto;
+}
+
+.notification-toggle .badge {
+    font-size: 0.625rem;
+    padding: 0.2em 0.42em;
+}
+
+.notification-dropdown-menu {
+    overflow: hidden;
+}
+
+.notification-dropdown-menu .dropdown-item + .dropdown-item {
+    border-top: 1px solid var(--border-subtle, rgba(33, 37, 41, 0.08));
+}
+
+.notification-dropdown-menu .dropdown-item:hover,
+.notification-dropdown-menu .dropdown-item:focus {
+    background: var(--shell-hover-bg);
+}
+
+.announcement-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.75rem;
+    padding: 0.4em 0.7em;
+}
+

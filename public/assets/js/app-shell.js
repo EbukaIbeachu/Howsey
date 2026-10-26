@@ -642,7 +642,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         const body = document.body;
         const themeToggleBtn = document.getElementById('mobileThemeToggle');
-        const themes = ['light', 'dark', 'autumn'];
+        const themes = ['light', 'dark'];
         let currentTheme;
         let themeRefreshTimer = null;
 
@@ -652,8 +652,6 @@
             }
             if (theme === 'dark') {
                 themeToggleBtn.innerHTML = '<i class="bi bi-moon-stars"></i>';
-            } else if (theme === 'autumn') {
-                themeToggleBtn.innerHTML = '<i class="bi bi-cloud-sun-fill"></i>';
             } else {
                 themeToggleBtn.innerHTML = '<i class="bi bi-brightness-high"></i>';
             }
@@ -673,11 +671,9 @@
         }
 
         function getThemeForHour(hour) {
-            if (hour >= 6 && hour < 11) {
+            // Light through the day, dark overnight.
+            if (hour >= 6 && hour < 18) {
                 return 'light';
-            }
-            if (hour >= 11 && hour < 18) {
-                return 'autumn';
             }
             return 'dark';
         }
@@ -689,8 +685,6 @@
             let nextChangeHour;
             if (hour < 6) {
                 nextChangeHour = 6;
-            } else if (hour < 11) {
-                nextChangeHour = 11;
             } else if (hour < 18) {
                 nextChangeHour = 18;
             } else {

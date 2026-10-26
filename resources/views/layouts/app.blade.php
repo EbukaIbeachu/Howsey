@@ -51,7 +51,7 @@
         $enablePwaUi = true;
         $enablePwaInstallUi = $enablePwaUi;
         $enablePwaNotificationUi = $enablePwaUi && Auth::check();
-        $shellAssetVersion = '20261026-components';
+        $shellAssetVersion = '20261026-shell';
         $shortcutRoutes = Auth::check()
             ? [
                 'home' => url('/'),
@@ -201,7 +201,11 @@
                         $primaryWorkspaceLabel = Auth::user()->isAccountant() ? 'Accounting' : 'Dashboard';
                         $homePortalUrl = $branding['company_portal_url'] ?? url('/');
                     @endphp
-                    <ul class="nav flex-column">
+                    {{-- Navigation is grouped by area of work. Every @can / @permission / @if
+                         gate below is unchanged from the pre-redesign sidebar; the groups are
+                         presentational and x-shell.nav-group hides its own heading when all of
+                         its items were filtered out, so no empty section can appear. --}}
+                    <x-shell.nav-group label="Workspace" icon="bi-grid-1x2">
                         <li class="nav-item">
                             <a class="nav-link" href="{{ $homePortalUrl }}">
                                 <i class="bi bi-house me-2"></i> Home
@@ -212,6 +216,91 @@
                                 <i class="bi bi-speedometer2 me-2"></i> {{ $primaryWorkspaceLabel }}
                             </a>
                         </li>
+                    </x-shell.nav-group>
+
+                    <x-shell.nav-group label="Portfolio" icon="bi-houses">
+                        @if(!Auth::user()->isSuperAdmin())
+                        @permission('buildings.view')
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('buildings.*') ? 'active' : '' }}" href="{{ route('buildings.index') }}">
+                                <i class="bi bi-houses me-2"></i> Buildings
+                            </a>
+                        </li>
+                        @endpermission
+                        @permission('tenants.view')
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('tenants.*') ? 'active' : '' }}" href="{{ route('tenants.index') }}">
+                                <i class="bi bi-people me-2"></i> Tenants
+                            </a>
+                        </li>
+                        @endpermission
+                        @permission('rentals.view')
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('rents.*') ? 'active' : '' }}" href="{{ route('rents.index') }}">
+                                <i class="bi bi-file-earmark-text me-2"></i> Rentals
+                            </a>
+                        </li>
+                        @endpermission
+                        @endif
+                    </x-shell.nav-group>
+
+                    <x-shell.nav-group label="Finance" icon="bi-cash-coin">
+                        @if(!Auth::user()->isSuperAdmin())
+                        @permission('payments.view')
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('payments.*') ? 'active' : '' }}" href="{{ route('payments.index') }}">
+                                <i class="bi bi-cash-stack me-2"></i> Payments
+                            </a>
+                        </li>
+                        @endpermission
+                        @endif
+
+                        @if(!Auth::user()->isSuperAdmin() && (Auth::user()->isAdmin() || Auth::user()->isManager()) && Route::has('payment-claims.index'))
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('payment-claims.*') ? 'active' : '' }}" href="{{ route('payment-claims.index') }}">
+                                <i class="bi bi-receipt-cutoff me-2"></i> Payment Claims
+                            </a>
+                        </li>
+                        @endif
+
+                        @if(!Auth::user()->isSuperAdmin() && (Auth::user()->isAdmin() || Auth::user()->isAccountant()))
+                        @permission('accounting.view')
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('accounting.*') ? 'active' : '' }}" href="{{ route('accounting.index') }}">
+                                <i class="bi bi-calculator me-2"></i> Accounting
+                            </a>
+                        </li>
+                        @endpermission
+                        @endif
+                    </x-shell.nav-group>
+
+                    <x-shell.nav-group label="Operations" icon="bi-tools">
+                        @if(!Auth::user()->isSuperAdmin() && !Auth::user()->isTenant())
+                        @permission('maintenance.view')
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('maintenance.*') ? 'active' : '' }}" href="{{ route('maintenance.index') }}">
+                                <i class="bi bi-tools me-2"></i> Maintenance
+                            </a>
+                        </li>
+                        @endpermission
+                        @endif
+
+                        @if(Auth::user()->isTenant())
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('maintenance.*') ? 'active' : '' }}" href="{{ route('maintenance.index') }}">
+                                <i class="bi bi-tools me-2"></i> Request Maintenance
+                            </a>
+                        </li>
+                        @endif
+
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('messages.*') ? 'active' : '' }}" href="{{ route('messages.index') }}">
+                                <i class="bi bi-chat-dots me-2"></i> Messages
+                            </a>
+                        </li>
+                    </x-shell.nav-group>
+
+                    <x-shell.nav-group label="Administration" icon="bi-shield-lock">
                         @can('viewAny', \App\Models\Company::class)
                             <li class="nav-item px-3 mt-2 mb-1">
                                 <a class="btn btn-sm btn-light w-100 text-start fw-semibold d-flex align-items-center justify-content-between" href="{{ route('companies.index') }}">
@@ -242,63 +331,6 @@
                                     </select>
                                 </form>
                             </li>
-                        @endif
-                        @if(!Auth::user()->isSuperAdmin())
-                        @permission('buildings.view')
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('buildings.*') ? 'active' : '' }}" href="{{ route('buildings.index') }}">
-                                <i class="bi bi-houses me-2"></i> Buildings
-                            </a>
-                        </li>
-                        @endpermission
-                        @permission('tenants.view')
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('tenants.*') ? 'active' : '' }}" href="{{ route('tenants.index') }}">
-                                <i class="bi bi-people me-2"></i> Tenants
-                            </a>
-                        </li>
-                        @endpermission
-                        @permission('rentals.view')
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('rents.*') ? 'active' : '' }}" href="{{ route('rents.index') }}">
-                                <i class="bi bi-file-earmark-text me-2"></i> Rentals
-                            </a>
-                        </li>
-                        @endpermission
-                        @endif
-
-                        @if(!Auth::user()->isSuperAdmin())
-                        @permission('payments.view')
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('payments.*') ? 'active' : '' }}" href="{{ route('payments.index') }}">
-                                <i class="bi bi-cash-stack me-2"></i> Payments
-                            </a>
-                        </li>
-                        @endpermission
-                        @endif
-
-                        @if(!Auth::user()->isSuperAdmin() && (Auth::user()->isAdmin() || Auth::user()->isManager()) && Route::has('payment-claims.index'))
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('payment-claims.*') ? 'active' : '' }}" href="{{ route('payment-claims.index') }}">
-                                <i class="bi bi-receipt-cutoff me-2"></i> Payment Claims
-                            </a>
-                        </li>
-                        @endif
-
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('messages.*') ? 'active' : '' }}" href="{{ route('messages.index') }}">
-                                <i class="bi bi-chat-dots me-2"></i> Messages
-                            </a>
-                        </li>
-
-                        @if(!Auth::user()->isSuperAdmin() && !Auth::user()->isTenant())
-                        @permission('maintenance.view')
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('maintenance.*') ? 'active' : '' }}" href="{{ route('maintenance.index') }}">
-                                <i class="bi bi-tools me-2"></i> Maintenance
-                            </a>
-                        </li>
-                        @endpermission
                         @endif
                         @if(!Auth::user()->isSuperAdmin())
                         @permission('users.view')
@@ -338,25 +370,7 @@
                                 </a>
                             </li>
                         @endif
-
-                        @if(!Auth::user()->isSuperAdmin() && (Auth::user()->isAdmin() || Auth::user()->isAccountant()))
-                        @permission('accounting.view')
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('accounting.*') ? 'active' : '' }}" href="{{ route('accounting.index') }}">
-                                <i class="bi bi-calculator me-2"></i> Accounting
-                            </a>
-                        </li>
-                        @endpermission
-                        @endif
-
-                        @if(Auth::user()->isTenant())
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('maintenance.*') ? 'active' : '' }}" href="{{ route('maintenance.index') }}">
-                                <i class="bi bi-tools me-2"></i> Request Maintenance
-                            </a>
-                        </li>
-                        @endif
-                    </ul>
+                    </x-shell.nav-group>
 
                     <hr class="text-white">
                     <div class="px-3 pb-3 sidebar-user">
@@ -423,7 +437,7 @@
                         </div>
                     @endif
 
-                    <div class="ms-auto me-3 d-flex align-items-center gap-2">
+                    <div class="topbar-actions ms-auto me-3 d-flex align-items-center gap-2">
                         <button
                             type="button"
                             class="btn btn-outline-secondary btn-sm"
@@ -432,36 +446,13 @@
                             title="Keyboard shortcuts"
                             aria-label="Keyboard shortcuts"
                         >
-                            <i class="bi bi-keyboard me-1"></i> Shortcuts
+                            <i class="bi bi-keyboard me-1" aria-hidden="true"></i> Shortcuts
                         </button>
-                        <div class="dropdown">
-                            <button class="btn btn-outline-secondary btn-sm position-relative" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-bell"></i>
-                                @if(($globalNotificationCount ?? 0) > 0)
-                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ $globalNotificationCount }}</span>
-                                @endif
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-end p-0 notification-dropdown-menu">
-                                <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
-                                    <span class="fw-semibold">Notifications</span>
-                                    @if(($globalNotificationCount ?? 0) > 0)
-                                        <form method="POST" action="{{ route('notifications.read-all') }}">
-                                            @csrf
-                                            <button type="submit" class="btn btn-link btn-sm text-decoration-none p-0">Mark all as read</button>
-                                        </form>
-                                    @endif
-                                </div>
-                                @forelse(($globalUnreadNotifications ?? collect()) as $notification)
-                                    <a href="{{ route('notifications.open', $notification->id) }}" class="dropdown-item px-3 py-2">
-                                        <div class="fw-semibold">{{ $notification->data['title'] ?? 'Notification' }}</div>
-                                        <div class="small text-muted notification-message">{{ $notification->data['message'] ?? 'A new item needs your attention.' }}</div>
-                                        <div class="small text-muted mt-1">{{ $notification->created_at?->diffForHumans() }}</div>
-                                    </a>
-                                @empty
-                                    <div class="px-3 py-3 text-muted small">No unread notifications.</div>
-                                @endforelse
-                            </div>
-                        </div>
+
+                        <x-shell.notification-dropdown
+                            :count="$globalNotificationCount ?? 0"
+                            :notifications="$globalUnreadNotifications ?? collect()"
+                        />
 
                         @if(isset($globalAnnouncementCount) && $globalAnnouncementCount > 0)
                             <a
@@ -471,7 +462,7 @@
                                 title="Open announcements"
                                 aria-label="Open announcements"
                             >
-                                <i class="bi bi-megaphone-fill me-1"></i>{{ $globalAnnouncementCount }}
+                                <i class="bi bi-megaphone-fill me-1" aria-hidden="true"></i>{{ $globalAnnouncementCount }}
                             </a>
                         @endif
                     </div>
@@ -481,35 +472,12 @@
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom d-md-none">
                     <h1 class="h2 text-primary fw-bold">{{ Auth::user()->isAdmin() ? 'Admin' : (Auth::user()->isAccountant() ? 'Accounting' : (Auth::user()->isManager() ? 'Manager' : 'Tenant')) }}</h1>
 
-                    <div class="d-flex align-items-center ms-auto gap-2">
-                        <div class="dropdown">
-                            <button class="btn btn-outline-secondary btn-sm position-relative" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-bell"></i>
-                                @if(($globalNotificationCount ?? 0) > 0)
-                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ $globalNotificationCount }}</span>
-                                @endif
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-end p-0 notification-dropdown-menu">
-                                <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
-                                    <span class="fw-semibold">Notifications</span>
-                                    @if(($globalNotificationCount ?? 0) > 0)
-                                        <form method="POST" action="{{ route('notifications.read-all') }}">
-                                            @csrf
-                                            <button type="submit" class="btn btn-link btn-sm text-decoration-none p-0">Mark all as read</button>
-                                        </form>
-                                    @endif
-                                </div>
-                                @forelse(($globalUnreadNotifications ?? collect()) as $notification)
-                                    <a href="{{ route('notifications.open', $notification->id) }}" class="dropdown-item px-3 py-2">
-                                        <div class="fw-semibold">{{ $notification->data['title'] ?? 'Notification' }}</div>
-                                        <div class="small text-muted notification-message">{{ $notification->data['message'] ?? 'A new item needs your attention.' }}</div>
-                                        <div class="small text-muted mt-1">{{ $notification->created_at?->diffForHumans() }}</div>
-                                    </a>
-                                @empty
-                                    <div class="px-3 py-3 text-muted small">No unread notifications.</div>
-                                @endforelse
-                            </div>
-                        </div>
+                    <div class="topbar-actions d-flex align-items-center ms-auto gap-2">
+                        <x-shell.notification-dropdown
+                            :count="$globalNotificationCount ?? 0"
+                            :notifications="$globalUnreadNotifications ?? collect()"
+                        />
+
                         @if(isset($globalAnnouncementCount) && $globalAnnouncementCount > 0)
                             <a
                                 id="announcement-badge-mobile"
@@ -518,7 +486,7 @@
                                 title="Open announcements"
                                 aria-label="Open announcements"
                             >
-                                <i class="bi bi-megaphone-fill me-1"></i>{{ $globalAnnouncementCount }}
+                                <i class="bi bi-megaphone-fill me-1" aria-hidden="true"></i>{{ $globalAnnouncementCount }}
                             </a>
                         @endif
                     </div>
