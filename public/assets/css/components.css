@@ -540,10 +540,14 @@ table.ui-table--sticky thead th {
    consumed by its cells, and the selector deliberately sits above Bootstrap's
    `.table-striped` / `.table-hover` rules, so no `!important` is needed.
    All five Bootstrap custom properties are set because the exact one Bootstrap
-   paints with varies by 5.3.x patch level. */
+   paints with varies by 5.3.x patch level.
+   `--info` and `--primary` were added for the accounting audit trail, whose
+   action types need more than four distinguishable tones. */
 table.table > tbody > tr.ui-row--success { --ui-row-bg: rgba(var(--tone-success-rgb), 0.18); }
 table.table > tbody > tr.ui-row--warning { --ui-row-bg: rgba(var(--tone-warning-rgb), 0.18); }
 table.table > tbody > tr.ui-row--danger { --ui-row-bg: rgba(var(--tone-danger-rgb), 0.18); }
+table.table > tbody > tr.ui-row--info { --ui-row-bg: rgba(var(--tone-info-rgb), 0.18); }
+table.table > tbody > tr.ui-row--primary { --ui-row-bg: rgba(var(--brand-primary-rgb), 0.14); }
 table.table > tbody > tr.ui-row--neutral { --ui-row-bg: var(--surface-2); }
 
 table.table > tbody > tr.ui-row--success > th,
@@ -552,6 +556,10 @@ table.table > tbody > tr.ui-row--warning > th,
 table.table > tbody > tr.ui-row--warning > td,
 table.table > tbody > tr.ui-row--danger > th,
 table.table > tbody > tr.ui-row--danger > td,
+table.table > tbody > tr.ui-row--info > th,
+table.table > tbody > tr.ui-row--info > td,
+table.table > tbody > tr.ui-row--primary > th,
+table.table > tbody > tr.ui-row--primary > td,
 table.table > tbody > tr.ui-row--neutral > th,
 table.table > tbody > tr.ui-row--neutral > td {
     background-color: var(--ui-row-bg);

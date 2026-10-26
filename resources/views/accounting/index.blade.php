@@ -7,17 +7,28 @@
         $selectedStatementYear = $selectedStatementYear ?? (int) request('year', $statementYears[0] ?? now()->year);
         $selectedCompanyId = $selectedCompanyId ?? request('company_id');
         $selectedBuildingId = $selectedBuildingId ?? request('building_id');
+
+        // The controller returns raw Bootstrap badge classes (see
+        // AccountingController::buildUnifiedRecords). They are mapped to the
+        // design-system tones here so the controller stays untouched (§5.4).
+        $badgeToneMap = [
+            'bg-success' => 'success',
+            'bg-danger' => 'danger',
+            'bg-warning' => 'warning',
+            'bg-warning text-dark' => 'warning',
+            'bg-info' => 'info',
+            'bg-info text-dark' => 'info',
+            'bg-primary' => 'primary',
+            'bg-secondary' => 'neutral',
+        ];
     @endphp
-    @if(auth()->user()->isAccountant())
-        <div class="border-bottom mb-3 pb-2">
-            <h1 class="h2 mb-1">Accounting Workspace</h1>
-            <div class="text-muted small fw-semibold">{{ auth()->user()->name }}</div>
-        </div>
-    @endif
-    <div class="d-flex flex-column flex-md-row {{ auth()->user()->isAccountant() ? 'justify-content-between' : 'justify-content-md-end' }} align-items-start align-items-md-center gap-2 mb-3">
-        @if(auth()->user()->isAccountant())
-            <div class="d-flex align-items-center gap-2 flex-nowrap">
-                <p class="text-muted small mb-0">Accounting Workspace Tools</p>
+
+    <x-ui.page-header
+        title="Accounting Workspace"
+        :subtitle="auth()->user()->isAccountant() ? auth()->user()->name : null"
+    >
+        <x-slot:actions>
+            @if(auth()->user()->isAccountant())
                 <button
                     type="button"
                     class="btn btn-outline-info btn-sm rounded-circle d-inline-flex align-items-center justify-content-center p-0"
@@ -30,11 +41,9 @@
                 >
                     ?
                 </button>
-            </div>
-        @endif
-        <div class="btn-toolbar flex-wrap gap-2 justify-content-start justify-content-md-end">
+            @endif
+
             @if(isset($accessibleCompanies) && $accessibleCompanies->count() > 0 && !auth()->user()->isSuperAdmin())
-            <div class="me-md-2">
                 <select class="form-select form-select-sm" id="global-company-select" aria-label="Company">
                     @foreach($accessibleCompanies as $company)
                         <option
@@ -46,200 +55,200 @@
                         </option>
                     @endforeach
                 </select>
-            </div>
             @endif
-            <div class="me-md-2">
-                <select class="form-select form-select-sm" id="global-statement-year" aria-label="Statement year">
-                    @foreach($statementYears as $statementYear)
-                        <option value="{{ $statementYear }}" {{ $selectedStatementYear === $statementYear ? 'selected' : '' }}>
-                            Statement Year: {{ $statementYear }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+
+            <select class="form-select form-select-sm" id="global-statement-year" aria-label="Statement year">
+                @foreach($statementYears as $statementYear)
+                    <option value="{{ $statementYear }}" {{ $selectedStatementYear === $statementYear ? 'selected' : '' }}>
+                        Statement Year: {{ $statementYear }}
+                    </option>
+                @endforeach
+            </select>
+
             @if(auth()->user()->isAdmin())
-            <a href="{{ route('accounting.audit-trail') }}" class="btn btn-outline-secondary btn-sm me-md-2">
-                <i class="bi bi-journal-text me-1"></i> Audit Trail
-            </a>
-            <a
-                href="{{ route('accounting.export', array_filter(['year' => $selectedStatementYear, 'company_id' => $selectedCompanyId])) }}"
-                target="_blank"
-                class="btn btn-success btn-sm me-md-2 statement-year-link"
-                id="accounting-export-csv-all"
-                data-base-url="{{ route('accounting.export', array_filter(['company_id' => $selectedCompanyId])) }}"
-                data-year-target="global-statement-year"
-            >
-                <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
-            </a>
-            <a
-                href="{{ route('accounting.export-pdf', array_filter(['year' => $selectedStatementYear, 'company_id' => $selectedCompanyId])) }}"
-                target="_blank"
-                class="btn btn-danger btn-sm statement-year-link"
-                id="accounting-export-pdf-all"
-                data-base-url="{{ route('accounting.export-pdf', array_filter(['company_id' => $selectedCompanyId])) }}"
-                data-year-target="global-statement-year"
-            >
-                <i class="bi bi-file-earmark-pdf me-1"></i> Export PDF
-            </a>
+                <x-ui.button variant="outline-secondary" size="sm" icon="bi bi-journal-text" :href="route('accounting.audit-trail')">Audit Trail</x-ui.button>
+
+                <x-ui.button
+                    variant="success"
+                    size="sm"
+                    icon="bi bi-file-earmark-spreadsheet"
+                    class="statement-year-link"
+                    id="accounting-export-csv-all"
+                    target="_blank"
+                    :href="route('accounting.export', array_filter(['year' => $selectedStatementYear, 'company_id' => $selectedCompanyId]))"
+                    :data-base-url="route('accounting.export', array_filter(['company_id' => $selectedCompanyId]))"
+                    data-year-target="global-statement-year"
+                >Export CSV</x-ui.button>
+
+                <x-ui.button
+                    variant="danger"
+                    size="sm"
+                    icon="bi bi-file-earmark-pdf"
+                    class="statement-year-link"
+                    id="accounting-export-pdf-all"
+                    target="_blank"
+                    :href="route('accounting.export-pdf', array_filter(['year' => $selectedStatementYear, 'company_id' => $selectedCompanyId]))"
+                    :data-base-url="route('accounting.export-pdf', array_filter(['company_id' => $selectedCompanyId]))"
+                    data-year-target="global-statement-year"
+                >Export PDF</x-ui.button>
             @endif
+
             @if(auth()->user()->isAccountant() && !auth()->user()->isAdmin())
-            <a
-                href="{{ route('accounting.report', array_filter(['year' => $selectedStatementYear, 'company_id' => $selectedCompanyId])) }}"
-                class="btn btn-outline-primary btn-sm statement-year-link"
-                id="accounting-view-report-all"
-                data-base-url="{{ route('accounting.report', array_filter(['company_id' => $selectedCompanyId])) }}"
-                data-year-target="global-statement-year"
-            >
-                <i class="bi bi-eye me-1"></i> View Report
-            </a>
+                <x-ui.button
+                    variant="outline-primary"
+                    size="sm"
+                    icon="bi bi-eye"
+                    class="statement-year-link"
+                    id="accounting-view-report-all"
+                    :href="route('accounting.report', array_filter(['year' => $selectedStatementYear, 'company_id' => $selectedCompanyId]))"
+                    :data-base-url="route('accounting.report', array_filter(['company_id' => $selectedCompanyId]))"
+                    data-year-target="global-statement-year"
+                >View Report</x-ui.button>
             @endif
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-ui.page-header>
 
     @if(auth()->user()->isAccountant())
-    <div class="collapse mb-4" id="accountingNarrativeHelp">
-        <div class="alert alert-info border-0 shadow-sm mb-0" role="alert">
-            <div class="d-flex align-items-start gap-2">
-                <i class="bi bi-journal-text fs-5 mt-1 text-primary"></i>
-                <div>
-                    <div class="fw-semibold">Add a clear narrative note to each entry.</div>
-                    <div class="small text-muted">
-                        A short explanation of what happened, why it was posted, and any supporting context makes the record easier to follow later, and it helps approvals, reviews, and corrections happen faster.
-                    </div>
-                </div>
-            </div>
+        <div class="collapse mb-4" id="accountingNarrativeHelp">
+            <x-ui.alert tone="info" icon="bi bi-journal-text" title="Add a clear narrative note to each entry." class="mb-0">
+                A short explanation of what happened, why it was posted, and any supporting context makes the record easier to follow later, and it helps approvals, reviews, and corrections happen faster.
+            </x-ui.alert>
         </div>
-    </div>
     @endif
 
     <!-- Admin: Pending Edit Requests -->
     @if(isset($pendingEditRequests) && $pendingEditRequests->count() > 0)
-    <div class="alert alert-warning shadow-sm border-warning mb-4">
-        <h5 class="alert-heading h6 fw-bold"><i class="bi bi-exclamation-circle-fill me-2"></i> Pending Edit Requests ({{ $pendingEditRequests->count() }})</h5>
-        <div class="table-responsive">
-            <table class="table table-sm table-borderless mb-0">
-                <thead>
-                    <tr class="text-muted small text-uppercase">
-                        <th>User</th>
-                        <th>Record</th>
-                        <th>Reason</th>
-                        <th>Date</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($pendingEditRequests as $req)
-                    <tr>
-                        <td class="fw-bold">{{ $req->user->name }}</td>
-                        <td>
-                            <span class="badge bg-secondary">{{ $req->accountingEntry->building->name }}</span>
-                            <span class="small text-muted">#{{ $req->accountingEntry->id }}</span>
-                        </td>
-                        <td class="text-wrap" style="max-width: 300px;">{{ $req->reason }}</td>
-                        <td class="small">{{ $req->created_at->diffForHumans() }}</td>
-                        <td>
-                            <button type="button" class="btn btn-success btn-sm py-0 px-2" data-bs-toggle="modal" data-bs-target="#approveAccountingEditRequest{{ $req->id }}">
-                                Approve
-                            </button>
-                            <form action="{{ route('accounting.handle-edit-request', $req->id) }}" method="POST" class="d-inline ms-1">
+    <x-ui.card
+        icon="bi bi-exclamation-circle-fill"
+        :title="'Pending Edit Requests ('.$pendingEditRequests->count().')'"
+        class="mb-4"
+    >
+        <x-ui.table :headers="['User', 'Record', 'Reason', 'Date', 'Action']">
+            <tbody>
+                @foreach($pendingEditRequests as $req)
+                <tr>
+                    <td class="fw-bold">{{ $req->user->name }}</td>
+                    <td>
+                        <x-ui.status-badge tone="neutral" icon="bi bi-building" :label="$req->accountingEntry->building->name" />
+                        <span class="small text-muted">#{{ $req->accountingEntry->id }}</span>
+                    </td>
+                    <td class="text-wrap" style="max-width: 300px;">{{ $req->reason }}</td>
+                    <td class="small">{{ $req->created_at->diffForHumans() }}</td>
+                    <td>
+                        <div class="ui-btn-group">
+                            <x-ui.button
+                                variant="success"
+                                size="sm"
+                                data-bs-toggle="modal"
+                                :data-bs-target="'#approveAccountingEditRequest'.$req->id"
+                            >Approve</x-ui.button>
+                            <form action="{{ route('accounting.handle-edit-request', $req->id) }}" method="POST" class="d-inline">
                                 @csrf
                                 <input type="hidden" name="action" value="reject">
-                                <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2">Reject</button>
+                                <x-ui.button type="submit" variant="outline-danger" size="sm">Reject</x-ui.button>
                             </form>
-                        </td>
-                    </tr>
-                    @push('modals')
-                    <div class="modal fade" id="approveAccountingEditRequest{{ $req->id }}" tabindex="-1" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content">
-                                <form action="{{ route('accounting.handle-edit-request', $req->id) }}" method="POST">
-                                    @csrf
-                                    <input type="hidden" name="action" value="approve">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Approve Accountant Edit Access</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body text-start">
-                                        <p class="small text-muted mb-3">
-                                            Set how long {{ $req->user->name }} can edit accounting record #{{ $req->accountingEntry->id }} after approval.
-                                        </p>
-                                        <div class="row g-2">
-                                            <div class="col-5">
-                                                <label class="form-label">Duration</label>
-                                                <input type="number" name="duration_value" class="form-control" min="1" max="168" value="2" required>
-                                            </div>
-                                            <div class="col-7">
-                                                <label class="form-label">Unit</label>
-                                                <select name="duration_unit" class="form-select" required>
-                                                    <option value="hours" selected>Hours</option>
-                                                    <option value="minutes">Minutes</option>
-                                                    <option value="days">Days</option>
-                                                </select>
-                                            </div>
+                        </div>
+                    </td>
+                </tr>
+                @push('modals')
+                <div class="modal fade" id="approveAccountingEditRequest{{ $req->id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <form action="{{ route('accounting.handle-edit-request', $req->id) }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="action" value="approve">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Approve Accountant Edit Access</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text-start">
+                                    <p class="small text-muted mb-3">
+                                        Set how long {{ $req->user->name }} can edit accounting record #{{ $req->accountingEntry->id }} after approval.
+                                    </p>
+                                    <div class="row g-2">
+                                        <div class="col-5">
+                                            <x-ui.form.input
+                                                name="duration_value"
+                                                type="number"
+                                                label="Duration"
+                                                :id="'approve-duration-value-'.$req->id"
+                                                :value="2"
+                                                min="1"
+                                                max="168"
+                                                required
+                                            />
                                         </div>
-                                        <div class="form-text mt-2">
-                                            Example: 2 hours, 30 minutes, or 1 day.
+                                        <div class="col-7">
+                                            <x-ui.form.select
+                                                name="duration_unit"
+                                                label="Unit"
+                                                :id="'approve-duration-unit-'.$req->id"
+                                                :value="'hours'"
+                                                :options="['hours' => 'Hours', 'minutes' => 'Minutes', 'days' => 'Days']"
+                                                required
+                                            />
                                         </div>
                                     </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                        <button type="submit" class="btn btn-success">Approve Access</button>
+                                    <div class="ui-hint mt-2">
+                                        Example: 2 hours, 30 minutes, or 1 day.
                                     </div>
-                                </form>
-                            </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <x-ui.button type="button" variant="outline-secondary" data-bs-dismiss="modal">Cancel</x-ui.button>
+                                    <x-ui.button type="submit" variant="success">Approve Access</x-ui.button>
+                                </div>
+                            </form>
                         </div>
                     </div>
-                    @endpush
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    </div>
+                </div>
+                @endpush
+                @endforeach
+            </tbody>
+        </x-ui.table>
+    </x-ui.card>
     @endif
 
     <!-- Reviewer: My Recent Requests -->
     @if(isset($myEditRequests) && $myEditRequests->count() > 0)
-    <div class="card mb-4 border-0 shadow-sm bg-light">
-        <div class="card-body py-2">
-            <div class="d-flex align-items-center justify-content-between" data-bs-toggle="collapse" data-bs-target="#myRequestsCollapse" style="cursor: pointer;">
-                <h6 class="mb-0 text-muted"><i class="bi bi-clock-history me-2"></i> My Recent Edit Requests</h6>
-                <i class="bi bi-chevron-down"></i>
-            </div>
-            <div class="collapse mt-2" id="myRequestsCollapse">
-                <table class="table table-sm mb-0">
-                    <tbody>
-                        @foreach($myEditRequests as $req)
-                        <tr>
-                            <td>Record #{{ $req->accountingEntry->id }}</td>
-                            <td class="text-muted small">{{ Str::limit($req->reason, 40) }}</td>
-                            <td>
-                                @if($req->status === 'pending')
-                                    <span class="badge bg-warning text-dark">Pending</span>
-                                @elseif($req->status === 'approved')
-                                    <span class="badge bg-success">Approved</span>
-                                    @if($req->expires_at && $req->expires_at > now())
-                                        <small class="text-success ms-1">(Expires {{ $req->expires_at->diffForHumans() }})</small>
-                                        @if($req->accountingEntry && ! $req->accountingEntry->isLocked())
-                                            <small class="d-block text-primary mt-1">Record unlocked. After editing, lock it back.</small>
-                                        @endif
-                                    @else
-                                        <span class="badge bg-secondary ms-1">Timed Out</span>
-                                    @endif
-                                @elseif($req->status === 'timed_out')
-                                    <span class="badge bg-secondary">Timed Out</span>
-                                    <small class="d-block text-muted mt-1">Submit another edit request to reopen access.</small>
-                                @else
-                                    <span class="badge bg-danger">Rejected</span>
-                                @endif
-                            </td>
-                            <td class="text-end small">{{ $req->created_at->diffForHumans() }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+    <x-ui.card class="mb-4">
+        <div class="d-flex align-items-center justify-content-between" data-bs-toggle="collapse" data-bs-target="#myRequestsCollapse" style="cursor: pointer;">
+            <h6 class="mb-0 text-muted"><i class="bi bi-clock-history me-2" aria-hidden="true"></i> My Recent Edit Requests</h6>
+            <i class="bi bi-chevron-down" aria-hidden="true"></i>
         </div>
-    </div>
+        <div class="collapse mt-2" id="myRequestsCollapse">
+            <x-ui.table>
+                <tbody>
+                    @foreach($myEditRequests as $req)
+                    <tr>
+                        <td>Record #{{ $req->accountingEntry->id }}</td>
+                        <td class="text-muted small">{{ Str::limit($req->reason, 40) }}</td>
+                        <td>
+                            @if($req->status === 'pending')
+                                <x-ui.status-badge tone="warning" label="Pending" />
+                            @elseif($req->status === 'approved')
+                                <x-ui.status-badge tone="success" label="Approved" />
+                                @if($req->expires_at && $req->expires_at > now())
+                                    <small class="text-success ms-1">(Expires {{ $req->expires_at->diffForHumans() }})</small>
+                                    @if($req->accountingEntry && ! $req->accountingEntry->isLocked())
+                                        <small class="d-block text-primary mt-1">Record unlocked. After editing, lock it back.</small>
+                                    @endif
+                                @else
+                                    <x-ui.status-badge tone="neutral" label="Timed Out" class="ms-1" />
+                                @endif
+                            @elseif($req->status === 'timed_out')
+                                <x-ui.status-badge tone="neutral" label="Timed Out" />
+                                <small class="d-block text-muted mt-1">Submit another edit request to reopen access.</small>
+                            @else
+                                <x-ui.status-badge tone="danger" label="Rejected" />
+                            @endif
+                        </td>
+                        <td class="text-end small">{{ $req->created_at->diffForHumans() }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </x-ui.table>
+        </div>
+    </x-ui.card>
     @endif
 
     <!-- Summary Cards (Exact Figures) -->
@@ -252,457 +261,444 @@
             $cashflow = $stats['cashflow'] ?? 0;
         @endphp
         <div class="col-md-4">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0 text-primary">{{ $building->name }}</h5>
-                        @if(auth()->user()->isAdmin())
-                    <div class="dropdown">
-                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-download"></i>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><h6 class="dropdown-header">Export {{ $building->name }}</h6></li>
-                            <li>
-                                <a
-                                    class="dropdown-item statement-year-link"
-                                    href="{{ route('accounting.export', array_filter(['building_id' => $building->id, 'year' => $selectedStatementYear, 'company_id' => $selectedCompanyId])) }}"
-                                    target="_blank"
-                                    data-base-url="{{ route('accounting.export', array_filter(['building_id' => $building->id, 'company_id' => $selectedCompanyId])) }}"
-                                    data-year-target="statement-year-{{ $building->id }}"
-                                >
-                                    <i class="bi bi-file-earmark-spreadsheet me-2 text-success"></i> CSV Report
-                                </a>
-                            </li>
-                            <li>
-                                <a
-                                    class="dropdown-item statement-year-link"
-                                    href="{{ route('accounting.export-pdf', array_filter(['building_id' => $building->id, 'year' => $selectedStatementYear, 'company_id' => $selectedCompanyId])) }}"
-                                    target="_blank"
-                                    data-base-url="{{ route('accounting.export-pdf', array_filter(['building_id' => $building->id, 'company_id' => $selectedCompanyId])) }}"
-                                    data-year-target="statement-year-{{ $building->id }}"
-                                >
-                                    <i class="bi bi-file-earmark-pdf me-2 text-danger"></i> PDF Report
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                        @endif
-                        @if(auth()->user()->isAccountant() && !auth()->user()->isAdmin())
-                        <a
-                            href="{{ route('accounting.report', array_filter(['building_id' => $building->id, 'year' => $selectedStatementYear, 'company_id' => $selectedCompanyId])) }}"
-                            class="btn btn-sm btn-outline-primary statement-year-link"
-                            data-base-url="{{ route('accounting.report', array_filter(['building_id' => $building->id, 'company_id' => $selectedCompanyId])) }}"
-                            data-year-target="statement-year-{{ $building->id }}"
-                        >
-                            <i class="bi bi-eye"></i>
-                        </a>
-                        @endif
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label for="statement-year-{{ $building->id }}" class="form-label small text-muted mb-1">Statement Year</label>
-                        <select class="form-select form-select-sm statement-year-select" id="statement-year-{{ $building->id }}">
-                            @foreach($statementYears as $statementYear)
-                                <option value="{{ $statementYear }}" {{ $selectedStatementYear === $statementYear ? 'selected' : '' }}>
-                                    {{ $statementYear }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+            <x-ui.card :title="$building->name" icon="bi bi-building" class="h-100">
+                <x-slot:actions>
                     @if(auth()->user()->isAdmin())
-                    <div class="d-flex flex-wrap gap-2 mb-3">
-                        <a
-                            href="{{ route('accounting.report', array_filter(['building_id' => $building->id, 'year' => $selectedStatementYear, 'company_id' => $selectedCompanyId])) }}"
-                            class="btn btn-sm btn-outline-primary statement-year-link"
-                            data-base-url="{{ route('accounting.report', array_filter(['building_id' => $building->id, 'company_id' => $selectedCompanyId])) }}"
-                            data-year-target="statement-year-{{ $building->id }}"
-                        >
-                            <i class="bi bi-eye me-1"></i> View Statement
-                        </a>
-                    </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Export options for {{ $building->name }}">
+                                <i class="bi bi-download" aria-hidden="true"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><h6 class="dropdown-header">Export {{ $building->name }}</h6></li>
+                                <li>
+                                    <a
+                                        class="dropdown-item statement-year-link"
+                                        href="{{ route('accounting.export', array_filter(['building_id' => $building->id, 'year' => $selectedStatementYear, 'company_id' => $selectedCompanyId])) }}"
+                                        target="_blank"
+                                        data-base-url="{{ route('accounting.export', array_filter(['building_id' => $building->id, 'company_id' => $selectedCompanyId])) }}"
+                                        data-year-target="statement-year-{{ $building->id }}"
+                                    >
+                                        <i class="bi bi-file-earmark-spreadsheet me-2 text-success" aria-hidden="true"></i> CSV Report
+                                    </a>
+                                </li>
+                                <li>
+                                    <a
+                                        class="dropdown-item statement-year-link"
+                                        href="{{ route('accounting.export-pdf', array_filter(['building_id' => $building->id, 'year' => $selectedStatementYear, 'company_id' => $selectedCompanyId])) }}"
+                                        target="_blank"
+                                        data-base-url="{{ route('accounting.export-pdf', array_filter(['building_id' => $building->id, 'company_id' => $selectedCompanyId])) }}"
+                                        data-year-target="statement-year-{{ $building->id }}"
+                                    >
+                                        <i class="bi bi-file-earmark-pdf me-2 text-danger" aria-hidden="true"></i> PDF Report
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     @endif
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted small">Total Income:</span>
-                        <span class="fw-bold text-success">₦{{ number_format($income, 2) }}</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted small">Total Expenses:</span>
-                        <span class="fw-bold text-danger">₦{{ number_format($expense, 2) }}</span>
-                    </div>
-                    <hr>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted small">Net Cash Flow:</span>
-                        <span class="fs-5 fw-bold {{ $cashflow >= 0 ? 'text-success' : 'text-danger' }}">
-                            ₦{{ number_format($cashflow, 2) }}
-                        </span>
-                    </div>
+                    @if(auth()->user()->isAccountant() && !auth()->user()->isAdmin())
+                        <x-ui.button
+                            variant="outline-primary"
+                            size="sm"
+                            icon="bi bi-eye"
+                            class="statement-year-link"
+                            :href="route('accounting.report', array_filter(['building_id' => $building->id, 'year' => $selectedStatementYear, 'company_id' => $selectedCompanyId]))"
+                            :data-base-url="route('accounting.report', array_filter(['building_id' => $building->id, 'company_id' => $selectedCompanyId]))"
+                            data-year-target="statement-year-{{ $building->id }}"
+                        >View</x-ui.button>
+                    @endif
+                </x-slot:actions>
+
+                <div class="mb-3">
+                    <label for="statement-year-{{ $building->id }}" class="ui-label small text-muted mb-1">Statement Year</label>
+                    <select class="form-select form-select-sm statement-year-select" id="statement-year-{{ $building->id }}">
+                        @foreach($statementYears as $statementYear)
+                            <option value="{{ $statementYear }}" {{ $selectedStatementYear === $statementYear ? 'selected' : '' }}>
+                                {{ $statementYear }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
-            </div>
+                @if(auth()->user()->isAdmin())
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <x-ui.button
+                        variant="outline-primary"
+                        size="sm"
+                        icon="bi bi-eye"
+                        class="statement-year-link"
+                        :href="route('accounting.report', array_filter(['building_id' => $building->id, 'year' => $selectedStatementYear, 'company_id' => $selectedCompanyId]))"
+                        :data-base-url="route('accounting.report', array_filter(['building_id' => $building->id, 'company_id' => $selectedCompanyId]))"
+                        data-year-target="statement-year-{{ $building->id }}"
+                    >View Statement</x-ui.button>
+                </div>
+                @endif
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted small">Total Income:</span>
+                    <span class="fw-bold text-success">₦{{ number_format($income, 2) }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted small">Total Expenses:</span>
+                    <span class="fw-bold text-danger">₦{{ number_format($expense, 2) }}</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted small">Net Cash Flow:</span>
+                    <span class="fs-5 fw-bold {{ $cashflow >= 0 ? 'text-success' : 'text-danger' }}">
+                        ₦{{ number_format($cashflow, 2) }}
+                    </span>
+                </div>
+            </x-ui.card>
         </div>
         @endforeach
     </div>
 
     <!-- Spreadsheet Interface -->
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-white p-0">
-            <ul class="nav nav-tabs border-bottom-0" id="accountingTabs" role="tablist">
-                <!-- Logic to set active tab based on role -->
-                @php
-                    $defaultTab = 'all';
-                @endphp
+    <x-ui.card flush>
+        <ul class="nav nav-tabs px-3 pt-2" id="accountingTabs" role="tablist">
+            <!-- Logic to set active tab based on role -->
+            @php
+                $defaultTab = 'all';
+            @endphp
 
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link {{ $defaultTab === 'all' ? 'active' : '' }} px-4 py-3" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
-                        <i class="bi bi-table me-1"></i> All Records
-                    </button>
-                </li>
-                @if(auth()->user()->isAdmin() || auth()->user()->isAccountant())
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link px-4 py-3 text-success" id="income-tab" data-bs-toggle="tab" data-bs-target="#income" type="button" role="tab">
-                        <i class="bi bi-plus-circle me-1"></i> Record Income
-                    </button>
-                </li>
-                @endif
-                @if(auth()->user()->isAdmin() || auth()->user()->isAccountant())
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link {{ $defaultTab === 'expense' ? 'active' : '' }} px-4 py-3 text-danger" id="expense-tab" data-bs-toggle="tab" data-bs-target="#expense" type="button" role="tab">
-                        <i class="bi bi-dash-circle me-1"></i> Record Expense
-                    </button>
-                </li>
-                @endif
-            </ul>
-        </div>
-        <div class="card-body p-0">
-            <div class="tab-content" id="accountingTabsContent">
-                
-                <!-- All Records Tab -->
-                <div class="tab-pane fade {{ $defaultTab === 'all' ? 'show active' : '' }} p-3" id="all" role="tabpanel">
-                    <!-- Search & Filter Bar -->
-                    <form action="{{ route('accounting.index') }}" method="GET" class="mb-3">
-                        @if($selectedCompanyId)
-                            <input type="hidden" name="company_id" value="{{ $selectedCompanyId }}">
-                        @endif
-                        <div class="row g-2">
-        <div class="col-md-4">
-            <input type="text" name="search" id="accountingSearch" class="form-control" placeholder="Search payments, expenses, tenants, units, or buildings..." value="{{ request('search') }}">
-        </div>
-        <div class="col-md-3">
-            <select name="building_id" class="form-select" onchange="this.form.submit()">
-                                    <option value="">All Buildings</option>
-                                    @foreach($buildings as $building)
-                                        <option value="{{ $building->id }}" {{ (int) $selectedBuildingId === (int) $building->id ? 'selected' : '' }}>
-                                            {{ $building->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <button type="submit" class="btn btn-primary w-100">Filter</button>
-                            </div>
-                            <div class="col-md-2">
-                                <a href="{{ route('accounting.index', array_filter(['company_id' => $selectedCompanyId, 'year' => $selectedStatementYear])) }}" class="btn btn-outline-secondary w-100">Reset</a>
-                            </div>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {{ $defaultTab === 'all' ? 'active' : '' }} px-4 py-3" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
+                    <i class="bi bi-table me-1" aria-hidden="true"></i> All Records
+                </button>
+            </li>
+            @if(auth()->user()->isAdmin() || auth()->user()->isAccountant())
+            <li class="nav-item" role="presentation">
+                <button class="nav-link px-4 py-3" id="income-tab" data-bs-toggle="tab" data-bs-target="#income" type="button" role="tab">
+                    <i class="bi bi-plus-circle me-1" aria-hidden="true"></i> Record Income
+                </button>
+            </li>
+            @endif
+            @if(auth()->user()->isAdmin() || auth()->user()->isAccountant())
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {{ $defaultTab === 'expense' ? 'active' : '' }} px-4 py-3" id="expense-tab" data-bs-toggle="tab" data-bs-target="#expense" type="button" role="tab">
+                    <i class="bi bi-dash-circle me-1" aria-hidden="true"></i> Record Expense
+                </button>
+            </li>
+            @endif
+        </ul>
+
+        <div class="tab-content" id="accountingTabsContent">
+
+            <!-- All Records Tab -->
+            <div class="tab-pane fade {{ $defaultTab === 'all' ? 'show active' : '' }} p-3" id="all" role="tabpanel">
+                <!-- Search & Filter Bar -->
+                <form action="{{ route('accounting.index') }}" method="GET" class="mb-3">
+                    @if($selectedCompanyId)
+                        <input type="hidden" name="company_id" value="{{ $selectedCompanyId }}">
+                    @endif
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <input type="text" name="search" id="accountingSearch" class="form-control" placeholder="Search payments, expenses, tenants, units, or buildings..." value="{{ request('search') }}">
                         </div>
-                    </form>
+                        <div class="col-md-3">
+                            <select name="building_id" class="form-select" onchange="this.form.submit()">
+                                <option value="">All Buildings</option>
+                                @foreach($buildings as $building)
+                                    <option value="{{ $building->id }}" {{ (int) $selectedBuildingId === (int) $building->id ? 'selected' : '' }}>
+                                        {{ $building->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <x-ui.button type="submit" variant="primary" block>Filter</x-ui.button>
+                        </div>
+                        <div class="col-md-2">
+                            <x-ui.button block variant="outline-secondary" :href="route('accounting.index', array_filter(['company_id' => $selectedCompanyId, 'year' => $selectedStatementYear]))">Reset</x-ui.button>
+                        </div>
+                    </div>
+                </form>
 
-                    <div class="table-responsive accounting-records-table-wrap">
-                        <table class="table table-hover align-middle mb-0 accounting-records-table" style="min-width: 1000px;">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th class="col-date">Date</th>
-                                    <th class="col-building">Building</th>
-                                    <th class="col-type">Type</th>
-                                    <th class="col-category">Category</th>
-                                    <th class="col-details">Details</th>
-                                    <th class="col-amount">Amount</th>
-                                    <th class="col-status">Status</th>
-                                    <th class="col-actions">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($records as $record)
-                                @php
-                                    $isAccountingRecord = $record['source'] === 'accounting';
-                                    $entry = $isAccountingRecord ? $record['model'] : null;
-                                    $payment = $isAccountingRecord ? null : $record['model'];
-                                @endphp
-                                <tr class="accounting-entry-row {{ $record['row_class'] }}">
-                                    <td class="col-date">{{ $record['date']->format('d M Y') }}</td>
-                                    <td class="col-building">{{ $record['building_name'] }}</td>
-                                    <td class="col-type">
-                                        <span class="badge {{ $record['type_badge_class'] }}">
-                                            {{ $record['type_label'] }}
-                                        </span>
-                                    </td>
-                                    <td class="col-category">{{ $record['category'] }}</td>
-                                    <td class="col-details">
-                                        <div class="small text-wrap" style="max-width: 300px;">
-                                            <div class="mobile-type-indicator-wrap mb-1">
-                                                <span class="badge mobile-type-indicator {{ $record['type_badge_class'] }}">
-                                                    {{ $record['type_label'] }}
-                                                </span>
-                                                <span class="text-muted small mobile-category-indicator">{{ $record['category'] }}</span>
-                                            </div>
-                                            @if($isAccountingRecord && $entry->type === 'income')
-                                                <strong>Tenant:</strong> {{ $entry->extra_details['tenant_name'] ?? 'N/A' }}<br>
-                                                <strong>Unit:</strong> {{ $entry->extra_details['property_id'] ?? 'N/A' }}
-                                                @if(!empty($entry->description))
-                                                    <br><span class="text-muted">{{ $entry->description }}</span>
-                                                @endif
-                                            @elseif($isAccountingRecord)
-                                                @if(!empty($entry->extra_details['property_id']))
-                                                    <strong>Unit:</strong> {{ $entry->extra_details['property_id'] }}<br>
-                                                @endif
-                                                @if(!empty($entry->extra_details['tenant_name']))
-                                                    <strong>Tenant:</strong> {{ $entry->extra_details['tenant_name'] }}<br>
-                                                @endif
-                                                {{ $entry->description ?? 'No description' }}
-                                            @else
-                                                <strong>Tenant:</strong> {{ optional(optional($payment->rent)->tenant)->full_name ?? 'N/A' }}<br>
-                                                <strong>Unit:</strong>
-                                                @if($payment->rent && $payment->rent->unit)
-                                                    {{ $payment->rent->unit->unit_number }}
-                                                @else
-                                                    N/A
-                                                @endif
-                                                @if($payment->payment_method)
-                                                    <br><strong>Method:</strong> {{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}
-                                                @endif
-                                                @if($payment->reference)
-                                                    <br><strong>Ref:</strong> {{ $payment->reference }}
-                                                @endif
-                                                @if($payment->notes)
-                                                    <br><span class="text-muted">{{ $payment->notes }}</span>
-                                                @endif
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td class="col-amount fw-bold {{ $record['amount_class'] }}">
-                                        {{ $record['amount_prefix'] }}₦{{ number_format($record['model']->amount, 2) }}
-                                    </td>
-                                    <td class="col-status">
-                                        @if($isAccountingRecord && $entry->status === 'finalized')
-                                            <span class="badge {{ $record['status_badge_class'] }}"><i class="bi bi-lock-fill me-1"></i> {{ $record['status_label'] }}</span>
-                                        @else
-                                            <span class="badge {{ $record['status_badge_class'] }}">{{ $record['status_label'] }}</span>
+                <x-ui.table
+                    hover
+                    class="accounting-records-table mb-0"
+                    style="min-width: 1000px;"
+                    :headers="[
+                        ['label' => 'Date', 'class' => 'col-date'],
+                        ['label' => 'Building', 'class' => 'col-building'],
+                        ['label' => 'Type', 'class' => 'col-type'],
+                        ['label' => 'Category', 'class' => 'col-category'],
+                        ['label' => 'Details', 'class' => 'col-details'],
+                        ['label' => 'Amount', 'class' => 'col-amount'],
+                        ['label' => 'Status', 'class' => 'col-status'],
+                        ['label' => 'Actions', 'class' => 'col-actions'],
+                    ]"
+                >
+                    <tbody>
+                        @forelse($records as $record)
+                        @php
+                            $isAccountingRecord = $record['source'] === 'accounting';
+                            $entry = $isAccountingRecord ? $record['model'] : null;
+                            $payment = $isAccountingRecord ? null : $record['model'];
+                            $typeTone = $badgeToneMap[$record['type_badge_class']] ?? 'neutral';
+                            $statusTone = $badgeToneMap[$record['status_badge_class']] ?? 'neutral';
+                        @endphp
+                        <tr class="accounting-entry-row {{ $record['row_class'] }}">
+                            <td class="col-date">{{ $record['date']->format('d M Y') }}</td>
+                            <td class="col-building">{{ $record['building_name'] }}</td>
+                            <td class="col-type">
+                                <x-ui.status-badge :tone="$typeTone" :label="$record['type_label']" />
+                            </td>
+                            <td class="col-category">{{ $record['category'] }}</td>
+                            <td class="col-details">
+                                <div class="small text-wrap" style="max-width: 300px;">
+                                    <div class="mobile-type-indicator-wrap mb-1">
+                                        <x-ui.status-badge class="mobile-type-indicator" :tone="$typeTone" :label="$record['type_label']" />
+                                        <span class="text-muted small mobile-category-indicator">{{ $record['category'] }}</span>
+                                    </div>
+                                    @if($isAccountingRecord && $entry->type === 'income')
+                                        <strong>Tenant:</strong> {{ $entry->extra_details['tenant_name'] ?? 'N/A' }}<br>
+                                        <strong>Unit:</strong> {{ $entry->extra_details['property_id'] ?? 'N/A' }}
+                                        @if(!empty($entry->description))
+                                            <br><span class="text-muted">{{ $entry->description }}</span>
                                         @endif
-                                    </td>
-                                    <td class="col-actions">
-                                        @if($isAccountingRecord)
-                                        @php
-                                            $hasActiveEditPermission = !auth()->user()->isAdmin() && $entry->hasActiveEditPermission(auth()->id());
-                                            $canDirectExpenseEdit = !auth()->user()->isAdmin() && $entry->canDirectlyEditByAccountant(auth()->id());
-                                            $isAccountantWorkflowEntry = $entry->isInAccountantWorkflow();
-                                            $hasPendingEditRequest = !auth()->user()->isAdmin() && $entry->relationLoaded('editRequests')
-                                                ? $entry->editRequests->where('status', 'pending')->isNotEmpty()
-                                                : false;
-                                            $hasApprovedEditHistory = !auth()->user()->isAdmin() && $entry->relationLoaded('editRequests')
-                                                ? $entry->editRequests->whereNotNull('approved_at')->isNotEmpty()
-                                                : false;
-                                            $canAccountantEditNow = $hasActiveEditPermission || $canDirectExpenseEdit;
-                                            $canAccountantLockBack = $canAccountantEditNow || $hasApprovedEditHistory;
-                                            $isPendingLockedExpenseForAdminReview = auth()->user()->isAdmin()
-                                                && $entry->type === 'expense'
-                                                && $entry->isLocked()
-                                                && $entry->status === 'pending';
-                                            $isAwaitingAccountantLockBackForAdmin = auth()->user()->isAdmin()
-                                                && $isAccountantWorkflowEntry
-                                                && ! $entry->isLocked()
-                                                && in_array($entry->status, ['pending', 'rejected'], true);
-                                        @endphp
-                                        <div class="btn-group btn-group-sm">
-                                            @if(!$entry->isLocked())
-                                                @if(auth()->user()->isAdmin() && $isAwaitingAccountantLockBackForAdmin)
-                                                    <button type="button" class="btn btn-outline-secondary" disabled title="Awaiting accountant lock back">
-                                                        <i class="bi bi-hourglass-split"></i>
-                                                    </button>
-                                                @elseif(auth()->user()->isAdmin() || $canAccountantLockBack)
-                                                    <form action="{{ route('accounting.finalize', $entry) }}" method="POST" onsubmit="return confirm('{{ auth()->user()->isAdmin() ? 'Are you sure? This will lock the record.' : 'You have finished editing this unlocked record. Lock it back now?' }}')">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <button type="submit" class="btn {{ auth()->user()->isAdmin() ? 'btn-outline-primary' : 'btn-primary' }}" title="{{ auth()->user()->isAdmin() ? 'Finalize & Lock' : 'Lock Back' }}">
-                                                            <i class="bi {{ auth()->user()->isAdmin() ? 'bi-check-lg' : 'bi-lock-fill' }}"></i>
-                                                            @if(!auth()->user()->isAdmin())
-                                                                <span class="ms-1">Lock Back</span>
-                                                            @endif
-                                                        </button>
-                                                    </form>
-                                                    @if(auth()->user()->isAdmin() && $entry->type === 'expense')
-                                                        <form action="{{ route('accounting.reject', $entry) }}" method="POST" class="ms-1" onsubmit="return confirm('Reject this expense record?')">
-                                                            @csrf
-                                                            @method('PATCH')
-                                                            <button type="submit" class="btn btn-outline-danger" title="Reject">
-                                                                <i class="bi bi-x-lg"></i>
-                                                            </button>
-                                                        </form>
-                                                    @endif
-                                                    @if(auth()->user()->isAdmin() || $canAccountantEditNow)
-                                                        <button type="button" class="btn btn-outline-secondary ms-1" data-bs-toggle="modal" data-bs-target="#editEntryModal{{ $entry->id }}" title="Edit">
-                                                            <i class="bi bi-pencil"></i>
-                                                        </button>
-                                                    @endif
-                                                @endif
-                                            @elseif($isPendingLockedExpenseForAdminReview)
-                                                <form action="{{ route('accounting.finalize', $entry) }}" method="POST" onsubmit="return confirm('Accept this expense entry?')">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <button type="submit" class="btn btn-outline-success" title="Accept">
-                                                        <i class="bi bi-check-lg"></i>
-                                                    </button>
-                                                </form>
-                                                <form action="{{ route('accounting.reject', $entry) }}" method="POST" class="ms-1" onsubmit="return confirm('Reject this expense entry and return it to the accountant for correction?')">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <button type="submit" class="btn btn-outline-danger" title="Reject">
-                                                        <i class="bi bi-x-lg"></i>
-                                                    </button>
-                                                </form>
-                                            @elseif(auth()->user()->isAdmin())
-                                                <form action="{{ route('accounting.unlock', $entry) }}" method="POST" onsubmit="return confirm('Unlock this record?')">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <button type="submit" class="btn btn-outline-warning" title="Unlock">
-                                                        <i class="bi bi-unlock-fill"></i>
-                                                    </button>
-                                                </form>
-                                                <button type="button" class="btn btn-outline-secondary ms-1" data-bs-toggle="modal" data-bs-target="#editEntryModal{{ $entry->id }}" title="Edit">
-                                                    <i class="bi bi-pencil"></i>
-                                                </button>
-                                            @elseif(!auth()->user()->isAdmin())
-                                                @if($canAccountantEditNow)
-                                                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editEntryModal{{ $entry->id }}">
-                                                        <i class="bi bi-pencil-fill"></i> Edit Now
-                                                    </button>
-                                                @elseif($hasPendingEditRequest)
-                                                    <button type="button" class="btn btn-outline-secondary" disabled title="Edit already requested">
-                                                        <i class="bi bi-hourglass-split"></i> Edit Requested
-                                                    </button>
+                                    @elseif($isAccountingRecord)
+                                        @if(!empty($entry->extra_details['property_id']))
+                                            <strong>Unit:</strong> {{ $entry->extra_details['property_id'] }}<br>
+                                        @endif
+                                        @if(!empty($entry->extra_details['tenant_name']))
+                                            <strong>Tenant:</strong> {{ $entry->extra_details['tenant_name'] }}<br>
+                                        @endif
+                                        {{ $entry->description ?? 'No description' }}
+                                    @else
+                                        <strong>Tenant:</strong> {{ optional(optional($payment->rent)->tenant)->full_name ?? 'N/A' }}<br>
+                                        <strong>Unit:</strong>
+                                        @if($payment->rent && $payment->rent->unit)
+                                            {{ $payment->rent->unit->unit_number }}
+                                        @else
+                                            N/A
+                                        @endif
+                                        @if($payment->payment_method)
+                                            <br><strong>Method:</strong> {{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}
+                                        @endif
+                                        @if($payment->reference)
+                                            <br><strong>Ref:</strong> {{ $payment->reference }}
+                                        @endif
+                                        @if($payment->notes)
+                                            <br><span class="text-muted">{{ $payment->notes }}</span>
+                                        @endif
+                                    @endif
+                                </div>
+                            </td>
+                            <td class="col-amount fw-bold {{ $record['amount_class'] }}">
+                                {{ $record['amount_prefix'] }}₦{{ number_format($record['model']->amount, 2) }}
+                            </td>
+                            <td class="col-status">
+                                @if($isAccountingRecord && $entry->status === 'finalized')
+                                    <x-ui.status-badge :tone="$statusTone" icon="bi bi-lock-fill" :label="$record['status_label']" />
+                                @else
+                                    <x-ui.status-badge :tone="$statusTone" :label="$record['status_label']" />
+                                @endif
+                            </td>
+                            <td class="col-actions">
+                                @if($isAccountingRecord)
+                                @php
+                                    $hasActiveEditPermission = !auth()->user()->isAdmin() && $entry->hasActiveEditPermission(auth()->id());
+                                    $canDirectExpenseEdit = !auth()->user()->isAdmin() && $entry->canDirectlyEditByAccountant(auth()->id());
+                                    $isAccountantWorkflowEntry = $entry->isInAccountantWorkflow();
+                                    $hasPendingEditRequest = !auth()->user()->isAdmin() && $entry->relationLoaded('editRequests')
+                                        ? $entry->editRequests->where('status', 'pending')->isNotEmpty()
+                                        : false;
+                                    $hasApprovedEditHistory = !auth()->user()->isAdmin() && $entry->relationLoaded('editRequests')
+                                        ? $entry->editRequests->whereNotNull('approved_at')->isNotEmpty()
+                                        : false;
+                                    $canAccountantEditNow = $hasActiveEditPermission || $canDirectExpenseEdit;
+                                    $canAccountantLockBack = $canAccountantEditNow || $hasApprovedEditHistory;
+                                    $isPendingLockedExpenseForAdminReview = auth()->user()->isAdmin()
+                                        && $entry->type === 'expense'
+                                        && $entry->isLocked()
+                                        && $entry->status === 'pending';
+                                    $isAwaitingAccountantLockBackForAdmin = auth()->user()->isAdmin()
+                                        && $isAccountantWorkflowEntry
+                                        && ! $entry->isLocked()
+                                        && in_array($entry->status, ['pending', 'rejected'], true);
+                                @endphp
+                                <div class="ui-btn-group">
+                                    @if(!$entry->isLocked())
+                                        @if(auth()->user()->isAdmin() && $isAwaitingAccountantLockBackForAdmin)
+                                            <x-ui.icon-button label="Awaiting accountant lock back" icon="bi bi-hourglass-split" disabled />
+                                        @elseif(auth()->user()->isAdmin() || $canAccountantLockBack)
+                                            <form action="{{ route('accounting.finalize', $entry) }}" method="POST" onsubmit="return confirm('{{ auth()->user()->isAdmin() ? 'Are you sure? This will lock the record.' : 'You have finished editing this unlocked record. Lock it back now?' }}')">
+                                                @csrf
+                                                @method('PATCH')
+                                                @if(auth()->user()->isAdmin())
+                                                    <x-ui.icon-button type="submit" label="Finalize and lock" icon="bi bi-check-lg" />
                                                 @else
-                                                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editRequestModal{{ $entry->id }}">
-                                                        <i class="bi bi-pencil-square"></i> Request Edit
-                                                    </button>
+                                                    <x-ui.button type="submit" variant="primary" size="sm" icon="bi bi-lock-fill">Lock Back</x-ui.button>
                                                 @endif
+                                            </form>
+                                            @if(auth()->user()->isAdmin() && $entry->type === 'expense')
+                                                <form action="{{ route('accounting.reject', $entry) }}" method="POST" onsubmit="return confirm('Reject this expense record?')">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <x-ui.icon-button type="submit" label="Reject expense record" icon="bi bi-x-lg" variant="danger" />
+                                                </form>
                                             @endif
-                                        </div>
+                                            @if(auth()->user()->isAdmin() || $canAccountantEditNow)
+                                                <x-ui.icon-button
+                                                    label="Edit entry"
+                                                    icon="bi bi-pencil"
+                                                    data-bs-toggle="modal"
+                                                    :data-bs-target="'#editEntryModal'.$entry->id"
+                                                />
+                                            @endif
+                                        @endif
+                                    @elseif($isPendingLockedExpenseForAdminReview)
+                                        <form action="{{ route('accounting.finalize', $entry) }}" method="POST" onsubmit="return confirm('Accept this expense entry?')">
+                                            @csrf
+                                            @method('PATCH')
+                                            <x-ui.icon-button type="submit" label="Accept expense entry" icon="bi bi-check-lg" variant="success" />
+                                        </form>
+                                        <form action="{{ route('accounting.reject', $entry) }}" method="POST" onsubmit="return confirm('Reject this expense entry and return it to the accountant for correction?')">
+                                            @csrf
+                                            @method('PATCH')
+                                            <x-ui.icon-button type="submit" label="Reject expense entry" icon="bi bi-x-lg" variant="danger" />
+                                        </form>
+                                    @elseif(auth()->user()->isAdmin())
+                                        <form action="{{ route('accounting.unlock', $entry) }}" method="POST" onsubmit="return confirm('Unlock this record?')">
+                                            @csrf
+                                            @method('PATCH')
+                                            <x-ui.icon-button type="submit" label="Unlock record" icon="bi bi-unlock-fill" />
+                                        </form>
+                                        <x-ui.icon-button
+                                            label="Edit entry"
+                                            icon="bi bi-pencil"
+                                            data-bs-toggle="modal"
+                                            :data-bs-target="'#editEntryModal'.$entry->id"
+                                        />
+                                    @elseif(!auth()->user()->isAdmin())
+                                        @if($canAccountantEditNow)
+                                            <x-ui.button
+                                                variant="primary"
+                                                size="sm"
+                                                icon="bi bi-pencil-fill"
+                                                data-bs-toggle="modal"
+                                                :data-bs-target="'#editEntryModal'.$entry->id"
+                                            >Edit Now</x-ui.button>
+                                        @elseif($hasPendingEditRequest)
+                                            <x-ui.button variant="outline-secondary" size="sm" icon="bi bi-hourglass-split" disabled>Edit Requested</x-ui.button>
+                                        @else
+                                            <x-ui.button
+                                                variant="outline-secondary"
+                                                size="sm"
+                                                icon="bi bi-pencil-square"
+                                                data-bs-toggle="modal"
+                                                :data-bs-target="'#editRequestModal'.$entry->id"
+                                            >Request Edit</x-ui.button>
+                                        @endif
+                                    @endif
+                                </div>
 
-                                        @if($entry->isLocked() && !auth()->user()->isAdmin() && !$hasPendingEditRequest)
-                                            @push('modals')
-                                            <div class="modal fade" id="editRequestModal{{ $entry->id }}" tabindex="-1" aria-hidden="true">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <form action="{{ route('accounting.request-edit', $entry) }}" method="POST">
-                                                            @csrf
-                                                            <div class="modal-header">
-                                                                <h5 class="modal-title">Request Edit Access</h5>
-                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                            </div>
-                                                            <div class="modal-body text-start">
-                                                                <div class="mb-3">
-                                                                    <label class="form-label">Reason for edit</label>
-                                                                    <textarea name="reason" class="form-control" rows="3" required placeholder="Why do you need to edit this?"></textarea>
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                                <button type="submit" class="btn btn-primary">Submit Request</button>
-                                                            </div>
-                                                        </form>
+                                @if($entry->isLocked() && !auth()->user()->isAdmin() && !$hasPendingEditRequest)
+                                    @push('modals')
+                                    <div class="modal fade" id="editRequestModal{{ $entry->id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <form action="{{ route('accounting.request-edit', $entry) }}" method="POST">
+                                                    @csrf
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Request Edit Access</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body text-start">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Reason for edit</label>
+                                                            <textarea name="reason" class="form-control" rows="3" required placeholder="Why do you need to edit this?"></textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <x-ui.button type="button" variant="outline-secondary" data-bs-dismiss="modal">Cancel</x-ui.button>
+                                                        <x-ui.button type="submit" variant="primary">Submit Request</x-ui.button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endpush
+                                @endif
+
+                                @push('modals')
+                                <div class="modal fade" id="editEntryModal{{ $entry->id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <form action="{{ route('accounting.update', $entry) }}" method="POST">
+                                                @csrf
+                                                @method('PATCH')
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Edit Entry #{{ $entry->id }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body text-start">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Amount</label>
+                                                        <input type="number" step="0.01" name="amount" class="form-control" value="{{ $entry->amount }}" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Category</label>
+                                                        <input type="text" name="category" class="form-control" value="{{ $entry->category }}" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Date</label>
+                                                        <input type="date" name="entry_date" class="form-control" value="{{ $entry->entry_date->format('Y-m-d') }}" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Description</label>
+                                                        <textarea name="description" class="form-control" rows="2">{{ $entry->description }}</textarea>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Related Tenant</label>
+                                                        <input type="text" name="tenant_name" class="form-control" value="{{ $entry->extra_details['tenant_name'] ?? '' }}">
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Related Unit / Property</label>
+                                                        <input type="text" name="property_id" class="form-control" value="{{ $entry->extra_details['property_id'] ?? '' }}">
                                                     </div>
                                                 </div>
-                                            </div>
-                                            @endpush
-                                        @endif
-
-                                        @push('modals')
-                                        <div class="modal fade" id="editEntryModal{{ $entry->id }}" tabindex="-1" aria-hidden="true">
-                                            <div class="modal-dialog modal-dialog-centered">
-                                                <div class="modal-content">
-                                                    <form action="{{ route('accounting.update', $entry) }}" method="POST">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title">Edit Entry #{{ $entry->id }}</h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body text-start">
-                                                            <div class="mb-3">
-                                                                <label class="form-label">Amount</label>
-                                                                <input type="number" step="0.01" name="amount" class="form-control" value="{{ $entry->amount }}" required>
-                                                            </div>
-                                                            <div class="mb-3">
-                                                                <label class="form-label">Category</label>
-                                                                <input type="text" name="category" class="form-control" value="{{ $entry->category }}" required>
-                                                            </div>
-                                                            <div class="mb-3">
-                                                                <label class="form-label">Date</label>
-                                                                <input type="date" name="entry_date" class="form-control" value="{{ $entry->entry_date->format('Y-m-d') }}" required>
-                                                            </div>
-                                                            <div class="mb-3">
-                                                                <label class="form-label">Description</label>
-                                                                <textarea name="description" class="form-control" rows="2">{{ $entry->description }}</textarea>
-                                                            </div>
-                                                            <div class="mb-3">
-                                                                <label class="form-label">Related Tenant</label>
-                                                                <input type="text" name="tenant_name" class="form-control" value="{{ $entry->extra_details['tenant_name'] ?? '' }}">
-                                                            </div>
-                                                            <div class="mb-3">
-                                                                <label class="form-label">Related Unit / Property</label>
-                                                                <input type="text" name="property_id" class="form-control" value="{{ $entry->extra_details['property_id'] ?? '' }}">
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                            <button type="submit" name="submit_action" value="save" class="btn btn-outline-primary">Save Changes</button>
-                                                            @if(!auth()->user()->isAdmin() && $canAccountantLockBack)
-                                                                <button type="submit" name="submit_action" value="save_and_lock" class="btn btn-primary">
-                                                                    <i class="bi bi-lock-fill me-1"></i> Save and Lock Back
-                                                                </button>
-                                                            @endif
-                                                        </div>
-                                                    </form>
+                                                <div class="modal-footer">
+                                                    <x-ui.button type="button" variant="outline-secondary" data-bs-dismiss="modal">Cancel</x-ui.button>
+                                                    <x-ui.button type="submit" name="submit_action" value="save" variant="outline-primary">Save Changes</x-ui.button>
+                                                    @if(!auth()->user()->isAdmin() && $canAccountantLockBack)
+                                                        <x-ui.button type="submit" name="submit_action" value="save_and_lock" variant="primary" icon="bi bi-lock-fill">Save and Lock Back</x-ui.button>
+                                                    @endif
                                                 </div>
-                                            </div>
+                                            </form>
                                         </div>
-                                        @endpush
-                                        @else
-                                        <div class="btn-group btn-group-sm">
-                                            @if(auth()->user()->isAdmin())
-                                            <a href="{{ route('payments.show', $payment) }}" class="btn btn-outline-secondary" title="View Payment">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                            <a href="{{ route('payments.edit', $payment) }}" class="btn btn-outline-primary ms-1" title="Edit Payment">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                            @else
-                                            <span class="text-muted small">Managed in Payments</span>
-                                            @endif
-                                        </div>
-                                        @endif
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="8" class="text-center py-5 text-muted">
-                                        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-                                        No accounting records found.
-                                    </td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="mt-4">
-                        {{ $records->withQueryString()->links() }}
-                    </div>
+                                    </div>
+                                </div>
+                                @endpush
+                                @else
+                                <div class="ui-btn-group">
+                                    @if(auth()->user()->isAdmin())
+                                        <x-ui.icon-button label="View payment" icon="bi bi-eye" :href="route('payments.show', $payment)" />
+                                        <x-ui.icon-button label="Edit payment" icon="bi bi-pencil" :href="route('payments.edit', $payment)" />
+                                    @else
+                                        <span class="text-muted small">Managed in Payments</span>
+                                    @endif
+                                </div>
+                                @endif
+                            </td>
+                        </tr>
+                        @empty
+                        <x-ui.table.empty-state :colspan="8" icon="bi bi-inbox" title="No accounting records found." />
+                        @endforelse
+                    </tbody>
+                </x-ui.table>
+                <div class="mt-4">
+                    {{ $records->withQueryString()->links() }}
                 </div>
+            </div>
 
-                <!-- Record Income Tab -->
-                @if(auth()->user()->isAdmin() || auth()->user()->isAccountant())
-                <div class="tab-pane fade p-4" id="income" role="tabpanel">
-                    <div class="row justify-content-center">
-                        <div class="col-md-8">
-                            <h4 class="mb-4 text-success"><i class="bi bi-plus-circle me-2"></i> Record New Income</h4>
-                            <form action="{{ route('accounting.store.income') }}" method="POST" class="row g-3 shadow-sm p-4 bg-light rounded border" id="income-record-form">
+            <!-- Record Income Tab -->
+            @if(auth()->user()->isAdmin() || auth()->user()->isAccountant())
+            <div class="tab-pane fade p-4" id="income" role="tabpanel">
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <x-ui.card>
+                            <h4 class="mb-4 text-success"><i class="bi bi-plus-circle me-2" aria-hidden="true"></i> Record New Income</h4>
+                            <form action="{{ route('accounting.store.income') }}" method="POST" class="row g-3" id="income-record-form">
                                 @csrf
                                 <div class="col-md-6">
                                     <label class="form-label">Building <span class="text-danger">*</span></label>
@@ -762,29 +758,26 @@
                                     <textarea name="description" class="form-control" rows="2" placeholder="Additional details..."></textarea>
                                 </div>
                                 <div class="col-12 mt-4 text-center d-none d-md-block">
-                                    <button type="submit" class="btn btn-success px-5 py-2">
-                                        <i class="bi bi-save me-2"></i> Save Income Record
-                                    </button>
+                                    <x-ui.button type="submit" variant="success" size="lg" icon="bi bi-save">Save Income Record</x-ui.button>
                                 </div>
                                 <div class="col-12 mt-4 d-md-none text-center">
-                                    <div class="alert alert-warning py-2 small">
-                                        <i class="bi bi-exclamation-triangle-fill me-1"></i> 
-                                        Desktop Only
-                                    </div>
+                                    <x-ui.alert tone="warning">Desktop Only</x-ui.alert>
                                 </div>
                             </form>
-                        </div>
+                        </x-ui.card>
                     </div>
                 </div>
-                @endif
+            </div>
+            @endif
 
-                <!-- Record Expense Tab -->
-                @if(auth()->user()->isAdmin() || auth()->user()->isAccountant())
-                <div class="tab-pane fade {{ $defaultTab === 'expense' ? 'show active' : '' }} p-4" id="expense" role="tabpanel">
-                    <div class="row justify-content-center">
-                        <div class="col-md-8">
-                            <h4 class="mb-4 text-danger"><i class="bi bi-dash-circle me-2"></i> Record New Expense</h4>
-                            <form action="{{ route('accounting.store.expense') }}" method="POST" class="row g-3 shadow-sm p-4 bg-light rounded border" id="expense-record-form">
+            <!-- Record Expense Tab -->
+            @if(auth()->user()->isAdmin() || auth()->user()->isAccountant())
+            <div class="tab-pane fade {{ $defaultTab === 'expense' ? 'show active' : '' }} p-4" id="expense" role="tabpanel">
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <x-ui.card>
+                            <h4 class="mb-4 text-danger"><i class="bi bi-dash-circle me-2" aria-hidden="true"></i> Record New Expense</h4>
+                            <form action="{{ route('accounting.store.expense') }}" method="POST" class="row g-3" id="expense-record-form">
                                 @csrf
                                 <div class="col-md-6">
                                     <label class="form-label">Building <span class="text-danger">*</span></label>
@@ -847,46 +840,32 @@
                                     <textarea name="description" class="form-control" rows="3" required placeholder="Detailed description of the expense..."></textarea>
                                 </div>
                                 <div class="col-12 mt-4 text-center d-none d-md-block">
-                                    <button type="submit" class="btn btn-danger px-5 py-2">
-                                        <i class="bi bi-save me-2"></i> Save Expense Record
-                                    </button>
+                                    <x-ui.button type="submit" variant="danger" size="lg" icon="bi bi-save">Save Expense Record</x-ui.button>
                                 </div>
                                 <div class="col-12 mt-4 d-md-none text-center">
-                                    <div class="alert alert-warning py-2 small">
-                                        <i class="bi bi-exclamation-triangle-fill me-1"></i> 
-                                        Desktop Only
-                                    </div>
+                                    <x-ui.alert tone="warning">Desktop Only</x-ui.alert>
                                 </div>
                             </form>
-                        </div>
+                        </x-ui.card>
                     </div>
                 </div>
-                @endif
             </div>
+            @endif
         </div>
-    </div>
+    </x-ui-card>
 </div>
 
 <style>
-    .nav-tabs .nav-link {
-        color: #6c757d;
-        border: none;
-        border-bottom: 3px solid transparent;
-        font-weight: 600;
-    }
-    .nav-tabs .nav-link.active {
-        color: #0d6efd;
-        background: transparent;
-        border-bottom-color: #0d6efd;
-    }
-    .nav-tabs #income-tab.active {
-        color: #198754;
-        border-bottom-color: #198754;
-    }
-    .nav-tabs #expense-tab.active {
-        color: #dc3545;
-        border-bottom-color: #dc3545;
-    }
+    /* The income / expense tabs keep their semantic colour. The palette values
+       come from the --tone-* design tokens rather than hard-coded hex codes,
+       and the id selectors outrank the global .nav-tabs rules in app-shell.css. */
+    #accountingTabs #income-tab { color: var(--tone-success); }
+    #accountingTabs #expense-tab { color: var(--tone-danger); }
+    #accountingTabs .nav-link { border-bottom: 3px solid transparent; font-weight: 600; }
+    #accountingTabs .nav-link.active { background: transparent; }
+    #accountingTabs #income-tab.active { border-bottom-color: currentColor; }
+    #accountingTabs #expense-tab.active { border-bottom-color: currentColor; }
+
     .mobile-type-indicator-wrap {
         display: none;
     }
@@ -918,13 +897,13 @@
             flex-wrap: wrap;
         }
         .accounting-records-table .accounting-entry-row.type-income .col-details {
-            border-left: 4px solid #198754;
+            border-left: 4px solid var(--tone-success);
         }
         .accounting-records-table .accounting-entry-row.type-expense .col-details {
-            border-left: 4px solid #dc3545;
+            border-left: 4px solid var(--tone-danger);
         }
         .accounting-records-table .accounting-entry-row.type-payment .col-details {
-            border-left: 4px solid #198754;
+            border-left: 4px solid var(--tone-success);
         }
     }
     @media (max-width: 991.98px) and (orientation: landscape) {
