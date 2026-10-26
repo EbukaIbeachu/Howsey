@@ -236,6 +236,11 @@ a.ui-stat:focus-visible {
 .ui-stat--info    { --ui-stat-accent: var(--tone-info);    --ui-stat-bg: var(--tone-info-bg); }
 .ui-stat--neutral { --ui-stat-accent: var(--text-muted);   --ui-stat-bg: var(--surface-2); }
 
+/* Long currency values step the number down instead of overflowing the tile —
+   the step used to be inline PHP in the dashboard markup. */
+.ui-stat--narrow .ui-stat__value { font-size: 1.875rem; }
+.ui-stat--compact .ui-stat__value { font-size: 1.5rem; }
+
 /* ---------------------------------------------------------------------------
    Status badge — icon + text label, so status never relies on colour alone
    ------------------------------------------------------------------------ */
@@ -336,6 +341,7 @@ a.ui-stat:focus-visible {
 .ui-btn--outline-secondary { color: var(--text-body); background-color: transparent; border-color: var(--border-strong); }
 .ui-btn--outline-danger { color: var(--tone-danger); background-color: transparent; border-color: var(--tone-danger); }
 .ui-btn--outline-warning { color: var(--tone-warning); background-color: transparent; border-color: var(--tone-warning); }
+.ui-btn--outline-info { color: var(--tone-info); background-color: transparent; border-color: var(--tone-info); }
 
 .ui-btn--outline-primary:hover,
 .ui-btn--outline-primary:focus-visible { background-color: rgba(var(--brand-primary-rgb), 0.10); }
@@ -345,6 +351,8 @@ a.ui-stat:focus-visible {
 .ui-btn--outline-danger:focus-visible { background-color: var(--tone-danger-bg); }
 .ui-btn--outline-warning:hover,
 .ui-btn--outline-warning:focus-visible { background-color: var(--tone-warning-bg); }
+.ui-btn--outline-info:hover,
+.ui-btn--outline-info:focus-visible { background-color: var(--tone-info-bg); }
 
 .ui-btn--block { width: 100%; }
 
@@ -381,6 +389,9 @@ a.ui-stat:focus-visible {
 
 .ui-icon-btn--danger:hover,
 .ui-icon-btn--danger:focus-visible { color: var(--tone-danger); border-color: var(--tone-danger); background-color: var(--tone-danger-bg); }
+
+.ui-icon-btn--success:hover,
+.ui-icon-btn--success:focus-visible { color: var(--tone-success); border-color: var(--tone-success); background-color: var(--tone-success-bg); }
 
 .ui-icon-btn--ghost { border-color: transparent; background-color: transparent; }
 .ui-icon-btn--ghost:hover,
@@ -522,6 +533,32 @@ table.ui-table--sticky thead th {
     top: 0;
     z-index: 1;
     background-color: var(--shell-table-head-bg, var(--surface-1));
+}
+
+/* Row status — token-based replacement for the per-page `!important`
+   mobile-status overrides (plan §4.4). The tone is declared once on the row and
+   consumed by its cells, and the selector deliberately sits above Bootstrap's
+   `.table-striped` / `.table-hover` rules, so no `!important` is needed.
+   All five Bootstrap custom properties are set because the exact one Bootstrap
+   paints with varies by 5.3.x patch level. */
+table.table > tbody > tr.ui-row--success { --ui-row-bg: rgba(var(--tone-success-rgb), 0.18); }
+table.table > tbody > tr.ui-row--warning { --ui-row-bg: rgba(var(--tone-warning-rgb), 0.18); }
+table.table > tbody > tr.ui-row--danger { --ui-row-bg: rgba(var(--tone-danger-rgb), 0.18); }
+table.table > tbody > tr.ui-row--neutral { --ui-row-bg: var(--surface-2); }
+
+table.table > tbody > tr.ui-row--success > th,
+table.table > tbody > tr.ui-row--success > td,
+table.table > tbody > tr.ui-row--warning > th,
+table.table > tbody > tr.ui-row--warning > td,
+table.table > tbody > tr.ui-row--danger > th,
+table.table > tbody > tr.ui-row--danger > td,
+table.table > tbody > tr.ui-row--neutral > th,
+table.table > tbody > tr.ui-row--neutral > td {
+    background-color: var(--ui-row-bg);
+    --bs-table-bg: var(--ui-row-bg);
+    --bs-table-accent-bg: var(--ui-row-bg);
+    --bs-table-bg-type: var(--ui-row-bg);
+    --bs-table-bg-state: var(--ui-row-bg);
 }
 
 /* ---------------------------------------------------------------------------

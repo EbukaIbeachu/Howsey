@@ -51,12 +51,16 @@
        Components always pair these with an icon + text label, never colour alone. */
     --tone-success: #047857;
     --tone-success-bg: #ecfdf5;
+    --tone-success-rgb: 4, 120, 87;
     --tone-warning: #b45309;
     --tone-warning-bg: #fffbeb;
+    --tone-warning-rgb: 180, 83, 9;
     --tone-danger: #b91c1c;
     --tone-danger-bg: #fef2f2;
+    --tone-danger-rgb: 185, 28, 28;
     --tone-info: #1d4ed8;
     --tone-info-bg: #eff6ff;
+    --tone-info-rgb: 29, 78, 216;
 
     /* radius */
     --radius-sm: 6px;

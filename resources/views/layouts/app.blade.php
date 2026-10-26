@@ -51,7 +51,7 @@
         $enablePwaUi = true;
         $enablePwaInstallUi = $enablePwaUi;
         $enablePwaNotificationUi = $enablePwaUi && Auth::check();
-        $shellAssetVersion = '20261026-shell';
+        $shellAssetVersion = '20261026-pilot';
         $shortcutRoutes = Auth::check()
             ? [
                 'home' => url('/'),
