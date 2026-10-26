@@ -35,7 +35,7 @@
                 <td>{{ $unit->floor ?? '-' }}</td>
                 <td>
                     @if($unit->unit_type === 'WAREHOUSE')
-                        <span class="badge bg-info text-dark">Warehouse</span>
+                        <x-ui.status-badge tone="info" label="Warehouse" />
                     @else
                         {{ $unit->bedrooms }} Bed / {{ $unit->bathrooms }} Bath
                     @endif

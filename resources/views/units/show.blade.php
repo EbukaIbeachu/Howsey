@@ -42,7 +42,7 @@
                 <dt class="col-sm-4">Configuration</dt>
                 <dd class="col-sm-8">
                     @if($unit->unit_type === 'WAREHOUSE')
-                        <span class="badge bg-info text-dark">Warehouse</span>
+                        <x-ui.status-badge tone="info" label="Warehouse" />
                         <span class="text-muted small ms-1">no bedrooms or bathrooms</span>
                     @else
                         {{ $unit->bedrooms }} Bed / {{ $unit->bathrooms }} Bath

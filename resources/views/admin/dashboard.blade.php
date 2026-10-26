@@ -208,7 +208,7 @@
                 data: {
                     labels: @json($chartLabels),
                     datasets: [{
-                        label: 'Revenue Collected (â‚¦)',
+                        label: 'Revenue Collected (₦)',
                         data: @json($chartData),
                         backgroundColor: 'rgba(124, 58, 237, 0.1)',
                         borderColor: '#7c3aed',
@@ -268,9 +268,9 @@
                                     family: "'Nunito', sans-serif"
                                 },
                                 callback: function(value, index, values) {
-                                    if (value >= 1000000) return 'â‚¦' + (value/1000000).toFixed(1) + 'M';
-                                    if (value >= 1000) return 'â‚¦' + (value/1000).toFixed(0) + 'k';
-                                    return 'â‚¦' + value;
+                                    if (value >= 1000000) return '₦' + (value/1000000).toFixed(1) + 'M';
+                                    if (value >= 1000) return '₦' + (value/1000).toFixed(0) + 'k';
+                                    return '₦' + value;
                                 }
                             }
                         },
