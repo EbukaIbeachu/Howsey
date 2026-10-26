@@ -27,7 +27,7 @@ class BrandingService
             'primary_text_color' => $primaryText,
             'primary_text_rgb' => $primaryTextRgb,
             'primary_text_muted' => $primaryTextMuted,
-            'support_email' => $company?->settings?->support_email ?: env('MAIL_FROM_ADDRESS'),
+            'support_email' => $company?->settings?->support_email ?: config('mail.from.address'),
             'support_phone' => $company?->settings?->support_phone,
             'logo_path' => $logoPath,
             'logo_url' => $logoPath ? url('/storage/'.$logoPath) : $defaultLogoUrl,

@@ -25,6 +25,11 @@ return [
         'subject' => env('WEB_PUSH_VAPID_SUBJECT'),
     ],
 
+    'ollama' => [
+        'url' => env('OLLAMA_API_URL', 'http://localhost:11434/api/generate'),
+        'model' => env('OLLAMA_MODEL', 'llama3'),
+    ],
+
     'paystack' => [
         'public_key' => env('PAYSTACK_PUBLIC_KEY'),
         'secret_key' => env('PAYSTACK_SECRET_KEY'),

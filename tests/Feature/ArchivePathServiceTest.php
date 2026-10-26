@@ -17,7 +17,7 @@ class ArchivePathServiceTest extends TestCase
 
         Storage::shouldReceive('disk')
             ->once()
-            ->with('public')
+            ->with('private')
             ->andReturnSelf();
         Storage::shouldReceive('put')
             ->once()

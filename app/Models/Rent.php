@@ -162,10 +162,12 @@ class Rent extends Model
             return 'an ongoing term';
         }
 
-        $days = max(1, $this->start_date->diffInDays($this->end_date) + 1);
+        // Carbon 3 returns floats from diffIn*(); cast so the label comparisons
+        // below (e.g. "1 day" vs "1 days") and future arithmetic stay integral.
+        $days = max(1, (int) $this->start_date->diffInDays($this->end_date) + 1);
         $weeks = max(1, (int) ceil($days / 7));
         $months = max(1, (int) ceil($days / 30));
-        $years = max(1, $this->start_date->diffInYears($this->end_date));
+        $years = max(1, (int) $this->start_date->diffInYears($this->end_date));
 
         return match ($this->rent_duration_value) {
             self::DURATION_DAILY => $days.' day'.($days === 1 ? '' : 's'),

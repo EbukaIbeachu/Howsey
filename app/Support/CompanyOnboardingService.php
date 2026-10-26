@@ -57,7 +57,7 @@ class CompanyOnboardingService
                 'send_lease_expiry_reminders' => true,
                 'lease_expiry_days_notice' => 30,
                 'from_name' => $company->name,
-                'from_email' => $payload['support_email'] ?? env('MAIL_FROM_ADDRESS'),
+                'from_email' => $payload['support_email'] ?? config('mail.from.address'),
             ]);
 
             $adminRole = Role::where('name', 'admin')->firstOrFail();

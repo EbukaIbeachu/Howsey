@@ -29,8 +29,8 @@ class ChatbotController extends Controller
             try {
                 // Replace with your actual Ollama API endpoint
                 // Assuming Ollama is running locally on port 11434
-                $ollamaUrl = env('OLLAMA_API_URL', 'http://localhost:11434/api/generate');
-                $model = env('OLLAMA_MODEL', 'llama3');
+                $ollamaUrl = config('services.ollama.url');
+                $model = config('services.ollama.model');
 
                 // Check if we can connect to Ollama
                 $ollamaResponse = Http::timeout(5)->post($ollamaUrl, [
