@@ -1,37 +1,29 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Message</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ route('messages.index') }}" class="btn btn-sm btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Back
-        </a>
-    </div>
-</div>
+@php
+    $senderMeta = '(' . optional($message->sender->role)->name . ') · ' . $message->created_at->format('M d, Y \a\t g:i A');
+@endphp
 
-<div class="card shadow-sm">
-    <div class="card-header bg-white">
-        <div class="d-flex justify-content-between align-items-start">
-            <div>
-                <strong>{{ $message->sender->name ?? 'Unknown' }}</strong>
-                <span class="text-muted small">({{ optional($message->sender->role)->name }})</span>
-                <div class="text-muted small">
-                    {{ $message->created_at->format('M d, Y \a\t g:i A') }}
-                </div>
-            </div>
-            <div class="text-end">
-                <span class="text-muted small">To:</span>
-                <div><strong>{{ $message->recipient->name ?? 'Unknown' }}</strong></div>
-            </div>
+<x-ui.page-header title="Message">
+    <x-slot:actions>
+        <x-ui.button variant="outline-secondary" size="sm" icon="bi bi-arrow-left" :href="route('messages.index')">Back</x-ui.button>
+    </x-slot:actions>
+</x-ui.page-header>
+
+<x-ui.card :title="$message->sender->name ?? 'Unknown'" :subtitle="$senderMeta">
+    <x-slot:actions>
+        <div class="text-end">
+            <span class="text-muted small">To:</span>
+            <div><strong>{{ $message->recipient->name ?? 'Unknown' }}</strong></div>
         </div>
+    </x-slot:actions>
+
+    <div class="message-body" style="white-space: pre-wrap; line-height: 1.6;">
+        {{ $message->body }}
     </div>
-    <div class="card-body">
-        <div class="message-body" style="white-space: pre-wrap; line-height: 1.6;">
-            {{ $message->body }}
-        </div>
-    </div>
-    <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+
+    <x-slot:footer>
         <span class="text-muted small">
             @if($message->read_at)
                 <i class="bi bi-check2-all text-success"></i> Read {{ $message->read_at->diffForHumans() }}
@@ -42,20 +34,17 @@
         @if((int) Auth::id() === (int) $message->recipient_id)
             <div class="d-flex gap-2">
                 @if(!Auth::user()->isTenant())
-                    <a href="{{ route('messages.reply', $message->id) }}" class="btn btn-sm" style="background-color: var(--primary-color); color: #fff;">
-                        <i class="bi bi-reply me-1"></i> Reply
-                    </a>
+                    <x-ui.button variant="primary" size="sm" icon="bi bi-reply"
+                        :href="route('messages.reply', $message->id)">Reply</x-ui.button>
                 @endif
                 @if(Auth::user()->isTenant() || Auth::user()->isAccountant())
                     <form method="POST" action="{{ route('messages.acknowledge', $message->id) }}" class="d-inline">
                         @csrf
-                        <button type="submit" class="btn btn-sm btn-outline-success">
-                            <i class="bi bi-check2-circle me-1"></i> Acknowledge
-                        </button>
+                        <x-ui.button type="submit" variant="outline-success" size="sm" icon="bi bi-check2-circle">Acknowledge</x-ui.button>
                     </form>
                 @endif
             </div>
         @endif
-    </div>
-</div>
+    </x-slot:footer>
+</x-ui.card>
 @endsection

@@ -340,6 +340,7 @@ a.ui-stat:focus-visible {
 .ui-btn--outline-primary { color: var(--primary-color); background-color: transparent; border-color: var(--primary-color); }
 .ui-btn--outline-secondary { color: var(--text-body); background-color: transparent; border-color: var(--border-strong); }
 .ui-btn--outline-danger { color: var(--tone-danger); background-color: transparent; border-color: var(--tone-danger); }
+.ui-btn--outline-success { color: var(--tone-success); background-color: transparent; border-color: var(--tone-success); }
 .ui-btn--outline-warning { color: var(--tone-warning); background-color: transparent; border-color: var(--tone-warning); }
 .ui-btn--outline-info { color: var(--tone-info); background-color: transparent; border-color: var(--tone-info); }
 
@@ -349,6 +350,8 @@ a.ui-stat:focus-visible {
 .ui-btn--outline-secondary:focus-visible { background-color: var(--surface-2); }
 .ui-btn--outline-danger:hover,
 .ui-btn--outline-danger:focus-visible { background-color: var(--tone-danger-bg); }
+.ui-btn--outline-success:hover,
+.ui-btn--outline-success:focus-visible { background-color: var(--tone-success-bg); }
 .ui-btn--outline-warning:hover,
 .ui-btn--outline-warning:focus-visible { background-color: var(--tone-warning-bg); }
 .ui-btn--outline-info:hover,
