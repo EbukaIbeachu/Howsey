@@ -261,7 +261,7 @@ return new class extends Migration
                 'primary_color' => '#7c3aed',
                 'email_header' => config('app.name', 'HOWSEY Property Management'),
                 'receipt_header' => 'Official Payment Receipt',
-                'support_email' => env('MAIL_FROM_ADDRESS'),
+                'support_email' => config('mail.from.address'),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]
@@ -275,7 +275,7 @@ return new class extends Migration
                 'send_lease_expiry_reminders' => true,
                 'lease_expiry_days_notice' => 30,
                 'from_name' => config('app.name', 'HOWSEY Property Management'),
-                'from_email' => env('MAIL_FROM_ADDRESS'),
+                'from_email' => config('mail.from.address'),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]

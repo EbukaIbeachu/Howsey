@@ -379,11 +379,11 @@ Route::post('/bot/message', function (Request $request) {
 
         // Try Ollama if configured (optional)
         try {
-            $ollamaUrl = env('OLLAMA_API_URL', 'http://localhost:11434/api/generate');
+            $ollamaUrl = config('services.ollama.url', 'http://localhost:11434/api/generate');
             $http = new Client(['timeout' => 2]); // Short timeout
             $res = $http->post($ollamaUrl, [
                 'json' => [
-                    'model' => env('OLLAMA_MODEL', 'llama3'),
+                    'model' => config('services.ollama.model', 'llama3'),
                     'prompt' => $message,
                     'stream' => false,
                 ],
