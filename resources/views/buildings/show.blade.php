@@ -280,7 +280,7 @@
                     <h5 class="mb-0">Unit Directory</h5>
                     <x-ui.button variant="primary" size="sm" icon="bi bi-plus-lg" :href="route('units.create', ['building_id' => $building->id])"><span class="d-none d-md-inline">Add New Unit</span><span class="d-inline d-md-none">Add</span></x-ui.button>
                 </div>
-                <x-ui.table>
+                <x-ui.table caption="Units in this building" :caption-sr="true">
                     <thead>
                         <tr>
                             <th scope="col">Unit #</th>
@@ -360,7 +360,7 @@
                     <h5 class="mb-0">Active Tenants</h5>
                     <x-ui.button variant="primary" size="sm" icon="bi bi-plus-lg" :href="route('tenants.create', ['building_id' => $building->id])"><span class="d-none d-md-inline">Register Tenant</span><span class="d-inline d-md-none">Register</span></x-ui.button>
                 </div>
-                <x-ui.table>
+                <x-ui.table caption="Active tenants in this building" :caption-sr="true">
                     <thead>
                         <tr>
                             <th scope="col">Name</th>
@@ -406,7 +406,7 @@
                         <x-ui.button variant="primary" size="sm" icon="bi bi-plus-lg" :href="route('rents.create', ['building_id' => $building->id])"><span class="d-none d-md-inline">Create Lease</span><span class="d-inline d-md-none">Create</span></x-ui.button>
                     </div>
                 </div>
-                <x-ui.table>
+                <x-ui.table caption="Active rental agreements in this building" :caption-sr="true">
                     <thead>
                         <tr>
                             <th scope="col">Tenant</th>
@@ -459,7 +459,7 @@
                     <h5 class="mb-0">Payment History</h5>
                     <x-ui.button variant="primary" size="sm" icon="bi bi-plus-lg" :href="route('payments.create', ['building_id' => $building->id])">Record Payment</x-ui.button>
                 </div>
-                <x-ui.table>
+                <x-ui.table caption="Payment history for this building" :caption-sr="true">
                     <thead>
                         <tr>
                             <th scope="col">Date</th>
@@ -517,7 +517,7 @@
                 <div class="row g-4">
                     <div class="col-12">
                         <x-ui.card title="Former Tenants" flush>
-                            <x-ui.table class="mb-0">
+                            <x-ui.table class="mb-0" caption="Former tenants" :caption-sr="true">
                                 <thead>
                                     <tr>
                                         <th scope="col">Name</th>
@@ -557,7 +557,7 @@
 
                     <div class="col-12">
                         <x-ui.card title="Closed Lease Agreements" flush>
-                            <x-ui.table class="mb-0">
+                            <x-ui.table class="mb-0" caption="Closed lease agreements" :caption-sr="true">
                                 <thead>
                                     <tr>
                                         <th scope="col">Tenant</th>

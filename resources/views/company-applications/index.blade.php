@@ -20,7 +20,7 @@
 </x-ui.page-header>
 
 <x-ui.card flush>
-    <x-ui.table :headers="$headers">
+    <x-ui.table :headers="$headers" caption="Company applications" :caption-sr="true">
         <tbody>
             @forelse($applications as $application)
                 @php

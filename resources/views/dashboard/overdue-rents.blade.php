@@ -11,7 +11,7 @@
 </x-ui.page-header>
 
 <x-ui.card title="Overdue Rents" flush>
-    <x-ui.table class="mb-0 overdue-rents-table overdue-rents-detail-table">
+    <x-ui.table class="mb-0 overdue-rents-table overdue-rents-detail-table" caption="Overdue rents" :caption-sr="true">
         <thead>
             <tr>
                 <th scope="col">Tenant</th>

@@ -10,7 +10,7 @@
 </x-ui.page-header>
 
 <x-ui.card flush>
-    <x-ui.table class="mb-0" :headers="['Name', 'Description', 'Users Count', 'Permissions', 'Actions']">
+    <x-ui.table class="mb-0" :headers="['Name', 'Description', 'Users Count', 'Permissions', 'Actions']" caption="Roles" :caption-sr="true">
         <tbody>
             @forelse($roles as $role)
                 <tr>

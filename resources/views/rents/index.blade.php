@@ -25,7 +25,7 @@
         <input type="text" id="rentSearch" class="form-control w-100 w-md-auto" placeholder="Search agreements...">
     </div>
 
-    <x-ui.table id="rentsTable" :striped="true">
+    <x-ui.table id="rentsTable" :striped="true" caption="Rental agreements" :caption-sr="true">
         <thead>
             <tr>
                 <th scope="col">Tenant</th>

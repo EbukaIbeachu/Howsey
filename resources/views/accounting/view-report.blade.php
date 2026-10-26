@@ -106,7 +106,7 @@
             </div>
 
             <h6 class="fw-bold mb-2">Tenant Yearly Statement</h6>
-            <x-ui.table striped :headers="[
+            <x-ui.table striped caption="Tenant yearly statement" :caption-sr="true" :headers="[
                 'Unit',
                 'Tenant',
                 'Start',
@@ -146,7 +146,7 @@
             </x-ui.table>
 
             <h6 class="fw-bold mb-2 mt-4">Expenses In {{ $selectedYear }}</h6>
-            <x-ui.table striped :headers="[
+            <x-ui.table striped :caption="'Expenses in '.$selectedYear" :caption-sr="true" :headers="[
                 'Date',
                 'Category',
                 'Description',
@@ -186,7 +186,7 @@
                     >View</x-ui.button>
                 </x-slot:actions>
 
-                <x-ui.table :headers="[
+                <x-ui.table caption="Building financial summary" :caption-sr="true" :headers="[
                     ['label' => 'Income', 'class' => 'text-end'],
                     ['label' => 'Expenses', 'class' => 'text-end'],
                     ['label' => 'Cash Flow', 'class' => 'text-end'],

@@ -8,7 +8,7 @@
 </x-ui.page-header>
 
 <x-ui.card>
-    <x-ui.table :striped="true">
+    <x-ui.table :striped="true" caption="Units" :caption-sr="true">
         <thead>
             <tr>
                 <th scope="col">Unit</th>

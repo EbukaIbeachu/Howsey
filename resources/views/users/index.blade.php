@@ -11,7 +11,7 @@
 </x-ui.page-header>
 
 <x-ui.card flush>
-    <x-ui.table class="mb-0" :headers="['Name', 'Account ID', 'Role', 'Status', 'Actions']">
+    <x-ui.table class="mb-0" :headers="['Name', 'Account ID', 'Role', 'Status', 'Actions']" caption="Users" :caption-sr="true">
         <tbody>
             @forelse($users as $user)
             <tr>

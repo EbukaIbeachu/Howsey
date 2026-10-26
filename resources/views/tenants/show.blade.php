@@ -199,7 +199,7 @@
                 <x-ui.button variant="success" size="sm" icon="bi bi-plus-lg" :href="route('rents.create', ['tenant_id' => $tenant->id])">New Lease</x-ui.button>
             </x-slot:actions>
 
-            <x-ui.table class="mb-0 lease-table">
+            <x-ui.table class="mb-0 lease-table" caption="Lease agreements" :caption-sr="true">
                 <thead>
                     <tr>
                         <th scope="col">Period</th>
@@ -258,7 +258,7 @@
                 <x-ui.button variant="primary" size="sm" icon="bi bi-plus-lg" :href="route('payments.create', ['tenant_id' => $tenant->id])">Record Payment</x-ui.button>
             </x-slot:actions>
 
-            <x-ui.table class="mb-0 payments-table">
+            <x-ui.table class="mb-0 payments-table" caption="Payment history" :caption-sr="true">
                 <thead>
                     <tr>
                         <th scope="col">Date</th>

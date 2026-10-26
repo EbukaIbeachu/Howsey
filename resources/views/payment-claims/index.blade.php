@@ -29,7 +29,7 @@
 </ul>
 
 <x-ui.card flush>
-    <x-ui.table>
+    <x-ui.table caption="Payment claims" :caption-sr="true">
         <thead>
             <tr>
                 <th scope="col">Tenant</th>

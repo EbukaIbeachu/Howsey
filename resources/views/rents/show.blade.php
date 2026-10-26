@@ -172,7 +172,7 @@
         <x-ui.button variant="primary" size="sm" icon="bi bi-plus-lg" :href="route('payments.create', ['rent_id' => $rent->id])">Record Payment</x-ui.button>
     </x-slot:actions>
 
-    <x-ui.table class="mb-0 payment-history-table">
+    <x-ui.table class="mb-0 payment-history-table" caption="Payment history for this agreement" :caption-sr="true">
         <thead>
             <tr>
                 <th scope="col">Date</th>

@@ -15,7 +15,7 @@
         <input type="text" id="tenantSearch" class="form-control" placeholder="Search tenants...">
     </div>
 
-    <x-ui.table id="tenantsTable" :striped="true">
+    <x-ui.table id="tenantsTable" :striped="true" caption="Tenants" :caption-sr="true">
         <thead>
             <tr>
                 <th scope="col">Name</th>

@@ -91,7 +91,7 @@
 </div>
 
 <x-ui.card title="My Payment Notifications" class="mt-4" flush>
-    <x-ui.table class="mb-0" :headers="['Date Paid', ['label' => 'Amount', 'class' => 'text-end'], 'Reference', 'Submitted', 'Status', 'Reviewer Note']">
+    <x-ui.table class="mb-0" :headers="['Date Paid', ['label' => 'Amount', 'class' => 'text-end'], 'Reference', 'Submitted', 'Status', 'Reviewer Note']" caption="My payment notifications" :caption-sr="true">
         <tbody>
             @forelse($claims as $claim)
                 <tr>

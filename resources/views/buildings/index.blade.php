@@ -23,7 +23,7 @@
         <input type="text" id="buildingSearch" class="form-control" placeholder="Search buildings...">
     </div>
 
-    <x-ui.table id="buildingsTable" :striped="true">
+    <x-ui.table id="buildingsTable" :striped="true" caption="Buildings" :caption-sr="true">
         <thead>
             <tr>
                 <th scope="col">Name</th>

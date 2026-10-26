@@ -104,7 +104,7 @@
     <!-- Recent Payments -->
     <div class="col-md-6 mb-4" id="payment-history">
         <x-ui.card title="Payment History" class="h-100" flush>
-            <x-ui.table class="mb-0" :headers="['Date', 'Amount', 'Method', 'Receipt']">
+            <x-ui.table class="mb-0" :headers="['Date', 'Amount', 'Method', 'Receipt']" caption="Payment history" :caption-sr="true">
                 <tbody>
                     @forelse($payments as $payment)
                     <tr>

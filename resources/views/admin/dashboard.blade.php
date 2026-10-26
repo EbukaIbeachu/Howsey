@@ -84,7 +84,7 @@
                 <x-ui.button variant="outline-primary" size="sm" class="ms-auto" :href="route('dashboard.recent-payments')">View All</x-ui.button>
             </x-slot:footer>
 
-            <x-ui.table class="mb-0">
+            <x-ui.table class="mb-0" caption="Recent payments" :caption-sr="true">
                 <thead>
                     <tr>
                         <th scope="col">Date</th>

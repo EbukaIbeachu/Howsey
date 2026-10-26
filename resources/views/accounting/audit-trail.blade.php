@@ -25,7 +25,7 @@
             .report-protect-overlay{position:fixed;inset:0;background:rgba(0,0,0,.25);backdrop-filter:blur(4px);display:none;z-index:9999}
             .report-blurred #reportRoot{filter:blur(6px);pointer-events:none}
         </style>
-        <x-ui.table>
+        <x-ui.table caption="Immutable audit trail" :caption-sr="true">
             <thead class="bg-light">
                 <tr>
                     <th scope="col">Timestamp</th>

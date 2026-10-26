@@ -15,7 +15,7 @@
         <input type="text" id="paymentSearch" class="form-control" placeholder="Search payments...">
     </div>
 
-    <x-ui.table id="paymentsTable" :striped="true">
+    <x-ui.table id="paymentsTable" :striped="true" caption="Payments" :caption-sr="true">
         <thead>
             <tr>
                 <th scope="col" class="d-none d-md-table-cell">Date</th>

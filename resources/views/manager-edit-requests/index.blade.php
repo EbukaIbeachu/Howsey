@@ -16,7 +16,7 @@
 <x-ui.page-header title="Manager Requests" />
 
 <x-ui.card flush>
-    <x-ui.table :headers="$headers">
+    <x-ui.table :headers="$headers" caption="Manager edit requests" :caption-sr="true">
         <tbody>
             @forelse($requests as $editRequest)
                 @php

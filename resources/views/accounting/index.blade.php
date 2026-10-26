@@ -123,7 +123,7 @@
         :title="'Pending Edit Requests ('.$pendingEditRequests->count().')'"
         class="mb-4"
     >
-        <x-ui.table :headers="['User', 'Record', 'Reason', 'Date', 'Action']">
+        <x-ui.table :headers="['User', 'Record', 'Reason', 'Date', 'Action']" caption="Pending edit requests" :caption-sr="true">
             <tbody>
                 @foreach($pendingEditRequests as $req)
                 <tr>
@@ -216,7 +216,7 @@
             <i class="bi bi-chevron-down" aria-hidden="true"></i>
         </div>
         <div class="collapse mt-2" id="myRequestsCollapse">
-            <x-ui.table>
+            <x-ui.table caption="My recent edit requests" :caption-sr="true">
                 <tbody>
                     @foreach($myEditRequests as $req)
                     <tr>
@@ -414,6 +414,8 @@
 
                 <x-ui.table
                     hover
+                    caption="Accounting records"
+                    :caption-sr="true"
                     class="accounting-records-table mb-0"
                     style="min-width: 1000px;"
                     :headers="[

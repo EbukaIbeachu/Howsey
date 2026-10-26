@@ -10,6 +10,11 @@
                             Omit to write your own <thead> in the slot.
       caption (string|null) accessible description of the table
                             (visually rendered above the table)
+      captionSr (bool)      render the caption for assistive technology only.
+                            The text stays in the accessibility tree but is
+                            not painted — use this when a visible card or page
+                            heading already labels the table, so the caption
+                            does not duplicate it on screen. Default false.
       id      (string|null) id placed on the <table>. Client-side table search
                             helpers target these ids (e.g. "tenantsTable"), so
                             pass the existing value through unchanged.
@@ -25,6 +30,7 @@
 @props([
     'headers' => null,
     'caption' => null,
+    'captionSr' => false,
     'id' => null,
     'sticky' => false,
     'striped' => false,
@@ -50,7 +56,9 @@
 <div class="table-responsive">
     <table {{ $attributes->class($classes)->merge(array_filter(['id' => $id], fn ($value) => $value !== null)) }}>
         @if($caption)
-            <caption class="ui-table__caption">{{ $caption }}</caption>
+            {{-- Bootstrap's .visually-hidden is the standard clip technique: the
+                 caption stays in the accessibility tree but is not painted. --}}
+            <caption class="ui-table__caption{{ $captionSr ? ' visually-hidden' : '' }}">{{ $caption }}</caption>
         @endif
 
         @if($headers)

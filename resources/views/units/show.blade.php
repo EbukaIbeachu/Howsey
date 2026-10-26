@@ -119,7 +119,7 @@
 </div>
 
 <x-ui.card title="Rental History" flush>
-    <x-ui.table class="mb-0">
+    <x-ui.table class="mb-0" caption="Rental history" :caption-sr="true">
         <thead>
             <tr>
                 <th scope="col">Tenant</th>

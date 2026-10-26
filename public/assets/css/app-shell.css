@@ -891,7 +891,12 @@ html.app-shell-loading .howsey-loader-overlay,
 }
 
 .sidebar {
-    background: linear-gradient(180deg, rgba(var(--brand-primary-rgb), 0.90), rgba(var(--brand-primary-rgb), 0.70));
+    /* Solid brand fill, not a translucent gradient. Blending the brand colour
+       over whatever sits behind the sidebar dropped the effective contrast of
+       the sidebar text to roughly 3.3:1 against a light page — below the 4.5:1
+       WCAG AA floor. A solid fill keeps the text at ~5.7:1 for the default
+       brand and makes the result independent of the page behind it. */
+    background: var(--primary-color);
     color: var(--on-primary);
 }
 

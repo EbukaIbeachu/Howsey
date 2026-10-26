@@ -41,7 +41,7 @@
         <input type="text" id="maintenanceSearch" class="form-control" placeholder="Search requests...">
     </div>
 
-    <x-ui.table id="maintenanceTable" :headers="$headers" class="mb-0">
+    <x-ui.table id="maintenanceTable" :headers="$headers" class="mb-0" caption="Maintenance requests" :caption-sr="true">
         <tbody>
             @forelse($requests as $request)
             @php

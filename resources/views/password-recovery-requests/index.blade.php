@@ -16,7 +16,7 @@
 <x-ui.page-header title="Password Recovery Requests" />
 
 <x-ui.card flush>
-    <x-ui.table :headers="$headers">
+    <x-ui.table :headers="$headers" caption="Password recovery requests" :caption-sr="true">
         <tbody>
             @forelse($requests as $recoveryRequest)
                 @php

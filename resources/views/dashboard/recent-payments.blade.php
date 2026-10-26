@@ -11,7 +11,7 @@
 </x-ui.page-header>
 
 <x-ui.card title="Recent Payments" flush>
-    <x-ui.table class="mb-0" :headers="['Date', 'Tenant', 'Amount', 'Unit']">
+    <x-ui.table class="mb-0" :headers="['Date', 'Tenant', 'Amount', 'Unit']" caption="Recent payments" :caption-sr="true">
         <tbody>
             @forelse($recentPayments as $payment)
                 <tr>

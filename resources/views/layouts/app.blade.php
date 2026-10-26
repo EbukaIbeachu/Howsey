@@ -51,7 +51,7 @@
         $enablePwaUi = true;
         $enablePwaInstallUi = $enablePwaUi;
         $enablePwaNotificationUi = $enablePwaUi && Auth::check();
-        $shellAssetVersion = '20261026-admin';
+        $shellAssetVersion = '20261026-a11y';
         $shortcutRoutes = Auth::check()
             ? [
                 'home' => url('/'),
@@ -146,8 +146,8 @@
         @auth
         <div class="mobile-header app-sticky-header d-lg-none d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center">
-                <button class="sidebar-toggle" id="sidebarToggleBtn" onclick="toggleSidebar()">
-                    <i class="bi bi-list"></i>
+                <button class="sidebar-toggle" id="sidebarToggleBtn" onclick="toggleSidebar()" aria-label="Open navigation menu" title="Open navigation menu">
+                    <i class="bi bi-list" aria-hidden="true"></i>
                 </button>
                 <div class="ms-3 fw-bold text-primary fs-5">
                     <a href="{{ $branding['company_portal_url'] ?? url('/') }}" class="text-decoration-none text-primary d-flex align-items-center gap-2">
@@ -191,8 +191,8 @@
                         @endif
                         <span class="brand-title">{{ $brandDisplayName }}</span>
                     </span>
-                    <button class="btn btn-sm text-white" onclick="toggleSidebar()">
-                        <i class="bi bi-x-lg"></i>
+                    <button class="btn btn-sm text-white" onclick="toggleSidebar()" aria-label="Close navigation menu" title="Close navigation menu">
+                        <i class="bi bi-x-lg" aria-hidden="true"></i>
                     </button>
                 </div>
                 <div class="pt-2 sidebar-content">
@@ -407,8 +407,8 @@
                 @auth
                 <!-- Desktop Collapsed Header -->
                 <div id="desktopHeader" class="app-sticky-header d-none d-lg-flex align-items-center mb-0 pb-2 border-bottom">
-                    <button class="sidebar-toggle me-3" onclick="toggleSidebar()">
-                        <i class="bi bi-list"></i>
+                    <button class="sidebar-toggle me-3" onclick="toggleSidebar()" aria-label="Toggle navigation menu" title="Toggle navigation menu">
+                        <i class="bi bi-list" aria-hidden="true"></i>
                     </button>
                     <span class="h4 mb-0 text-primary fw-bold d-flex align-items-center gap-2">
                         @if($brandLogoUrl)
@@ -521,8 +521,8 @@
                 @auth
                     @if(!request()->routeIs('dashboard') && !auth()->user()->isAccountant())
                         <div class="mb-2">
-                            <a href="javascript:history.back()" class="text-decoration-none text-secondary">
-                                <i class="bi bi-arrow-left fs-5"></i>
+                            <a href="javascript:history.back()" class="text-decoration-none text-secondary" aria-label="Go back" title="Go back">
+                                <i class="bi bi-arrow-left fs-5" aria-hidden="true"></i>
                             </a>
                         </div>
                     @endif
@@ -664,23 +664,23 @@
     @if($enableChatbot)
         <!-- Chatbot Widget HTML -->
         <div id="chatbot-widget">
-            <button id="chatbot-toggle" type="button">
-                <i class="bi bi-chat-dots-fill"></i>
+            <button id="chatbot-toggle" type="button" aria-label="Open assistant chat" title="Open assistant chat">
+                <i class="bi bi-chat-dots-fill" aria-hidden="true"></i>
             </button>
         </div>
 
         <div id="chatbot-window">
             <div id="chatbot-header">
                 <span class="fw-bold"><i class="bi bi-robot me-2"></i>{{ $brandDisplayName }} Assistant</span>
-                <button class="btn btn-sm text-white" type="button" data-chatbot-close>
-                    <i class="bi bi-x-lg"></i>
+                <button class="btn btn-sm text-white" type="button" data-chatbot-close aria-label="Close assistant chat" title="Close assistant chat">
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
                 </button>
             </div>
             <div id="chatbot-messages"></div>
             <div id="chatbot-input-area">
                 <input type="text" id="chatbot-input" placeholder="Type your message...">
-                <button id="chatbot-send" type="button">
-                    <i class="bi bi-send-fill"></i>
+                <button id="chatbot-send" type="button" aria-label="Send message" title="Send message">
+                    <i class="bi bi-send-fill" aria-hidden="true"></i>
                 </button>
             </div>
         </div>

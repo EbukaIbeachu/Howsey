@@ -641,29 +641,14 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         const body = document.body;
-        const themeToggleBtn = document.getElementById('mobileThemeToggle');
         const themes = ['light', 'dark'];
-        let currentTheme;
         let themeRefreshTimer = null;
-
-        function updateThemeButtonIcon(theme) {
-            if (!themeToggleBtn) {
-                return;
-            }
-            if (theme === 'dark') {
-                themeToggleBtn.innerHTML = '<i class="bi bi-moon-stars"></i>';
-            } else {
-                themeToggleBtn.innerHTML = '<i class="bi bi-brightness-high"></i>';
-            }
-        }
 
         function applyTheme(theme) {
             themes.forEach(function (value) {
                 body.classList.remove('theme-' + value);
             });
             body.classList.add('theme-' + theme);
-            currentTheme = theme;
-            updateThemeButtonIcon(theme);
         }
 
         function refreshThemeFromCurrentTime() {
@@ -703,14 +688,6 @@
         }
 
         refreshThemeFromCurrentTime();
-
-        if (themeToggleBtn) {
-            themeToggleBtn.addEventListener('click', function () {
-                const index = themes.indexOf(currentTheme);
-                const nextIndex = (index + 1) % themes.length;
-                applyTheme(themes[nextIndex]);
-            });
-        }
 
         ['visibilitychange', 'pageshow', 'focus'].forEach(function (eventName) {
             window.addEventListener(eventName, function () {
