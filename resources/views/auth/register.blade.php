@@ -5,136 +5,75 @@
     $registrationAccountDomain = \App\Support\AutoEmailGenerator::domainForCompany($registrationCompany ?? null);
     $registrationAccountExample = 'e.lastname@'.$registrationAccountDomain;
 @endphp
-<div class="container">
-    <style>
-        .auth-surface .card {
-            border: 1px solid rgba(var(--brand-primary-rgb), 0.16);
-            box-shadow: 0 1rem 2rem rgba(var(--brand-primary-rgb), 0.10) !important;
-        }
-        .auth-surface .form-control:focus,
-        .auth-surface .form-select:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(var(--brand-primary-rgb), 0.18);
-        }
-        .auth-surface .btn-link {
-            color: var(--primary-color);
-        }
-        .auth-surface .btn-link:hover,
-        .auth-surface .btn-link:focus {
-            color: var(--primary-hover);
-        }
-        .auth-surface .btn-outline-secondary:hover,
-        .auth-surface .btn-outline-secondary:focus {
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-            background-color: rgba(var(--brand-primary-rgb), 0.08);
-        }
-    </style>
-    <div class="row justify-content-center mt-5 auth-surface">
+<div class="container py-4 py-lg-5">
+    <div class="row justify-content-center">
         <div class="col-md-6 col-lg-5">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0 d-flex align-items-center gap-2">
-                            @if(!empty($branding['logo_url']))
-                                <img src="{{ $branding['logo_url'] }}" alt="{{ $branding['app_name'] ?? 'HOWSEY' }} logo" class="rounded bg-white p-1" style="width: 2rem; height: 2rem; object-fit: contain;">
-                            @else
-                                <i class="bi bi-person-plus me-2"></i>
-                            @endif
-                            {{ $registrationCompany ? $registrationCompany->name.' Staff Registration' : 'Staff Registration' }}
-                        </h4>
-                        <button type="button" class="btn btn-sm btn-light rounded-circle fw-bold" data-bs-toggle="modal" data-bs-target="#registrationEmailHelpModal" aria-label="Registration help">?</button>
-                </div>
-                <div class="card-body p-4">
-                    @if($registrationCompany)
-                        <div class="alert alert-info">
-                            You are registering into the <strong>{{ $registrationCompany->name }}</strong> workspace. Your account will stay attached to this company after approval.
-                        </div>
+            <x-ui.card
+                :title="$registrationCompany ? $registrationCompany->name.' Staff Registration' : 'Staff Registration'"
+                icon="bi bi-person-plus"
+            >
+                <x-slot:actions>
+                    @if(!empty($branding['logo_url']))
+                        <img src="{{ $branding['logo_url'] }}" alt="{{ $branding['app_name'] ?? 'HOWSEY' }} logo" class="rounded bg-white p-1" style="width: 2rem; height: 2rem; object-fit: contain;">
                     @endif
-                    <form method="POST" action="{{ $registrationCompany ? route('companies.register.store', $registrationCompany->slug) : route('register') }}">
-                        @csrf
+                    <x-ui.icon-button label="Registration help" icon="bi bi-question-lg" data-bs-toggle="modal" data-bs-target="#registrationEmailHelpModal" />
+                </x-slot:actions>
 
-                        <div class="mb-3">
-                            <label for="name" class="form-label">Full Name</label>
-                            <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" required autofocus>
-                            @error('name')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                @if($registrationCompany)
+                    <x-ui.alert tone="info">
+                        You are registering into the <strong>{{ $registrationCompany->name }}</strong> workspace. Your account will stay attached to this company after approval.
+                    </x-ui.alert>
+                @endif
 
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Account ID</label>
-                            <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email') }}" readonly>
-                            <div class="form-text">Generated automatically from your full name for this workspace. Do not forget this Account ID.</div>
-                            @error('email')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                <form method="POST" action="{{ $registrationCompany ? route('companies.register.store', $registrationCompany->slug) : route('register') }}">
+                    @csrf
 
-                        <div class="mb-3">
-                            <label for="phone" class="form-label">Phone Number</label>
-                            <input type="text" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone" value="{{ old('phone') }}">
-                            <div class="form-text">Use a login phone number you will remember. Password recovery depends on this number.</div>
-                            @error('phone')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                    <x-ui.form.input name="name" label="Full Name" required autofocus />
 
-                        <div class="mb-3">
-                            <label for="role" class="form-label">Register As</label>
-                            <select class="form-select @error('role') is-invalid @enderror" id="role" name="role" required>
-                                <option value="manager" {{ old('role', 'manager') === 'manager' ? 'selected' : '' }}>Manager</option>
-                                <option value="accountant" {{ old('role') === 'accountant' ? 'selected' : '' }}>Accountant</option>
-                            </select>
-                            @error('role')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                    <x-ui.form.input
+                        name="email"
+                        type="email"
+                        label="Account ID"
+                        readonly
+                        hint="Generated automatically from your full name for this workspace. Do not forget this Account ID."
+                    />
 
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password" required>
-                            @error('password')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                    <x-ui.form.input
+                        name="phone"
+                        label="Phone Number"
+                        hint="Use a login phone number you will remember. Password recovery depends on this number."
+                    />
 
-                        <div class="mb-3">
-                            <label for="password_confirmation" class="form-label">Confirm Password</label>
-                            <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
-                        </div>
+                    <x-ui.form.select name="role" label="Register As" required>
+                        <option value="manager" {{ old('role', 'manager') === 'manager' ? 'selected' : '' }}>Manager</option>
+                        <option value="accountant" {{ old('role') === 'accountant' ? 'selected' : '' }}>Accountant</option>
+                    </x-ui.form.select>
 
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Register</button>
-                            <a href="{{ $registrationCompany ? route('companies.portal', $registrationCompany->slug) : url('/') }}" class="btn btn-outline-secondary text-center">Home</a>
-                            <a href="{{ $registrationCompany ? route('companies.login', $registrationCompany->slug) : route('login') }}" class="btn btn-link text-center">Already have an account? Login</a>
-                        </div>
-                    </form>
-                </div>
-            </div>
+                    <x-ui.form.input name="password" type="password" label="Password" required />
+
+                    <x-ui.form.input name="password_confirmation" type="password" label="Confirm Password" required />
+
+                    <div class="d-grid gap-2">
+                        <x-ui.button type="submit" variant="primary">Register</x-ui.button>
+                        <x-ui.button variant="outline-secondary" :href="$registrationCompany ? route('companies.portal', $registrationCompany->slug) : url('/')">Home</x-ui.button>
+                        <x-ui.button variant="ghost" :href="$registrationCompany ? route('companies.login', $registrationCompany->slug) : route('login')">Already have an account? Login</x-ui.button>
+                    </div>
+                </form>
+            </x-ui.card>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="registrationEmailHelpModal" tabindex="-1" aria-labelledby="registrationEmailHelpModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="registrationEmailHelpModalLabel">About the account ID to use</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>You do not have to use a real external email address for this account.</p>
-                <p>
-                    Use an account ID that matches the HOWSEY system,
-                    such as <strong>{{ $registrationAccountExample }}</strong>.
-                    This helps keep account profiles organized within the system.
-                </p>
-                <p>This account ID is safe to use here and is not meant for anything unusual or outside the normal operation of the HOWSEY platform.</p>
-                <p class="mb-0">All users are advised to keep their login details safe and well stored.</p>
-            </div>
-        </div>
-    </div>
-</div>
+<x-ui.modal id="registrationEmailHelpModal" title="About the account ID to use">
+    <p>You do not have to use a real external email address for this account.</p>
+    <p>
+        Use an account ID that matches the HOWSEY system,
+        such as <strong>{{ $registrationAccountExample }}</strong>.
+        This helps keep account profiles organized within the system.
+    </p>
+    <p>This account ID is safe to use here and is not meant for anything unusual or outside the normal operation of the HOWSEY platform.</p>
+    <p class="mb-0">All users are advised to keep their login details safe and well stored.</p>
+</x-ui.modal>
 @endsection
 
 @push('scripts')
