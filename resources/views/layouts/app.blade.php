@@ -51,7 +51,7 @@
         $enablePwaUi = true;
         $enablePwaInstallUi = $enablePwaUi;
         $enablePwaNotificationUi = $enablePwaUi && Auth::check();
-        $shellAssetVersion = '20261026-design-tokens';
+        $shellAssetVersion = '20261026-components';
         $shortcutRoutes = Auth::check()
             ? [
                 'home' => url('/'),
@@ -102,6 +102,7 @@
 
     <link rel="preload" href="{{ asset('assets/css/app-shell.css') }}?v={{ $shellAssetVersion }}" as="style">
     <link rel="stylesheet" href="{{ asset('assets/css/app-shell.css') }}?v={{ $shellAssetVersion }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/components.css') }}?v={{ $shellAssetVersion }}">
     <style>
         :root {
             --primary-color: {{ $brandPrimary }};
