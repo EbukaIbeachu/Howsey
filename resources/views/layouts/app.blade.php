@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 
     <!-- Styles -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -51,7 +51,7 @@
         $enablePwaUi = true;
         $enablePwaInstallUi = $enablePwaUi;
         $enablePwaNotificationUi = $enablePwaUi && Auth::check();
-        $shellAssetVersion = '20261020-watermark-visible';
+        $shellAssetVersion = '20261026-design-tokens';
         $shortcutRoutes = Auth::check()
             ? [
                 'home' => url('/'),
@@ -119,163 +119,7 @@
             --shell-card-bg: rgba(255, 255, 255, 0.92);
             --shell-hover-bg: rgba(var(--brand-primary-rgb), 0.08);
         }
-        .howsey-loader-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(10px);
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-            transition: opacity 0.2s ease, visibility 0.2s ease;
-        }
-        html.app-shell-loading .howsey-loader-overlay,
-        .howsey-loader-overlay.visible {
-            opacity: 1;
-            visibility: visible;
-            pointer-events: all;
-        }
-        .howsey-loader-overlay .loader {
-            width: 36px;
-            aspect-ratio: 1;
-            position: relative;
-        }
-        .howsey-loader-overlay .loader::before,
-        .howsey-loader-overlay .loader::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: 50%;
-            background: var(--primary-color);
-            box-shadow: 0 0 18px rgba(var(--brand-primary-rgb), 0.28);
-        }
-        .howsey-loader-overlay .loader::before {
-            box-shadow: -52px 0 var(--primary-color), 0 0 18px rgba(var(--brand-primary-rgb), 0.28);
-            animation: howsey-loader-orbit-left 1.5s infinite linear;
-        }
-        .howsey-loader-overlay .loader::after {
-            transform: rotate(0deg) translateX(52px);
-            animation: howsey-loader-orbit-right 1.5s infinite linear;
-        }
-        @keyframes howsey-loader-orbit-left {
-            50% {
-                transform: translateX(52px);
-            }
-        }
-        @keyframes howsey-loader-orbit-right {
-            100% {
-                transform: rotate(-360deg) translateX(52px);
-            }
-        }
-        .shortcut-key {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 2.2rem;
-            padding: 0.3rem 0.55rem;
-            border-radius: 999px;
-            border: 1px solid rgba(124, 58, 237, 0.18);
-            background: rgba(124, 58, 237, 0.08);
-            color: #5b21b6;
-            font-size: 0.8rem;
-            font-weight: 700;
-            line-height: 1;
-        }
-        .shortcut-plus {
-            color: #6b7280;
-            font-weight: 700;
-        }
-        .shortcut-row + .shortcut-row {
-            border-top: 1px solid #eef2f7;
-        }
-        .brand-logo {
-            width: 2rem;
-            height: 2rem;
-            object-fit: contain;
-            border-radius: 0.75rem;
-            background: rgba(255, 255, 255, 0.92);
-            padding: 0.2rem;
-            box-shadow: 0 0.35rem 1rem rgba(15, 23, 42, 0.14);
-        }
-        .app-sticky-header {
-            background: linear-gradient(180deg, rgba(var(--brand-primary-rgb), 0.16), rgba(255, 255, 255, 0.90));
-        }
-        .workspace-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-            padding: 0.45rem 0.8rem;
-            border-radius: 999px;
-            background: rgba(var(--brand-primary-rgb), 0.10);
-            border: 1px solid rgba(var(--brand-primary-rgb), 0.16);
-            color: #4c1d95;
-            font-size: 0.82rem;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-        .workspace-switcher {
-            min-width: 18rem;
-            max-width: 100%;
-        }
-        .workspace-switcher .form-select {
-            border-radius: 999px;
-            border-color: rgba(var(--brand-primary-rgb), 0.18);
-            background-color: rgba(255, 255, 255, 0.92);
-            font-weight: 600;
-        }
-        .sidebar {
-            background: linear-gradient(180deg, rgba(var(--brand-primary-rgb), 0.90), rgba(var(--brand-primary-rgb), 0.70));
-            color: var(--on-primary);
-        }
-        .nav-header {
-            background: linear-gradient(90deg, rgba(0, 0, 0, 0.14), rgba(255, 255, 255, 0.10));
-            color: var(--on-primary);
-        }
-        .sidebar .nav-link:hover,
-        .sidebar .nav-link.active {
-            background: rgba(255, 255, 255, 0.16);
-        }
-        .sidebar .btn,
-        .sidebar .btn-outline-light,
-        .sidebar .small,
-        .sidebar .text-white-50,
-        .sidebar .nav-header .btn,
-        .sidebar .sidebar-user,
-        .sidebar .sidebar-user .text-muted,
-        .sidebar .form-select,
-        .sidebar .form-select option {
-            color: var(--on-primary) !important;
-        }
-        .sidebar .text-white-50,
-        .sidebar .sidebar-user .text-muted,
-        .sidebar .nav-item-header,
-        .sidebar .nav-item > span.text-uppercase {
-            color: var(--on-primary-muted) !important;
-        }
-        .sidebar .btn-outline-light,
-        .sidebar .form-select {
-            border-color: rgba(var(--on-primary-rgb), 0.28) !important;
-        }
-        .sidebar .btn-outline-light:hover,
-        .sidebar .btn-outline-light:focus {
-            color: var(--on-primary) !important;
-            border-color: rgba(var(--on-primary-rgb), 0.46) !important;
-            background: rgba(var(--on-primary-rgb), 0.10) !important;
-        }
-        .sidebar .form-select {
-            background-color: rgba(var(--on-primary-rgb), 0.08);
-            box-shadow: none;
-        }
-        .sidebar .form-select option {
-            background-color: #ffffff;
-            color: #111827 !important;
-        }
+        /* Shell CSS moved to public/assets/css/app-shell.css (Phase 2). */
     </style>
     <script>
         document.documentElement.classList.add('app-shell-loading');
