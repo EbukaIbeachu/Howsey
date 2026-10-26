@@ -4,14 +4,15 @@
 <div class="container py-4 py-lg-5">
     <div class="row justify-content-center">
         <div class="col-12 col-xl-9">
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-4 p-lg-5">
+            <x-ui.card class="shadow-sm">
+                <div class="p-3 p-lg-4">
+
                     @if (session('success'))
-                        <div class="alert alert-success">{{ session('success') }}</div>
+                        <x-ui.alert tone="success" class="mb-3">{{ session('success') }}</x-ui.alert>
                     @endif
 
                     @if (session('error'))
-                        <div class="alert alert-danger">{{ session('error') }}</div>
+                        <x-ui.alert tone="danger" class="mb-3">{{ session('error') }}</x-ui.alert>
                     @endif
 
                     <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
@@ -22,9 +23,9 @@
                         </div>
                         <div class="text-lg-end">
                             @if($subscriptionCompany->hasActiveSubscription())
-                                <span class="badge bg-success-subtle text-success-emphasis px-3 py-2">Active</span>
+                                <x-ui.status-badge tone="success" label="Active" />
                             @else
-                                <span class="badge bg-danger-subtle text-danger-emphasis px-3 py-2">Expired</span>
+                                <x-ui.status-badge tone="danger" label="Expired" />
                             @endif
                             <div class="small text-muted mt-2">Workspace: {{ route('companies.portal', $subscriptionCompany->slug) }}</div>
                         </div>
@@ -82,40 +83,40 @@
 
                             @if($paystackConfigured && $latestSubscriptionPayment->paystack_authorization_url && $latestSubscriptionPayment->transaction_status !== 'success')
                                 <div class="mt-3">
-                                    <a href="{{ $latestSubscriptionPayment->paystack_authorization_url }}" class="btn btn-outline-primary btn-sm">Continue Pending Paystack Payment</a>
+                                    <x-ui.button variant="outline-primary" size="sm" :href="$latestSubscriptionPayment->paystack_authorization_url">Continue Pending Paystack Payment</x-ui.button>
                                 </div>
                             @endif
                         </div>
                     @endif
 
-                    <div class="alert {{ $subscriptionCompany->hasActiveSubscription() ? 'alert-info' : 'alert-warning' }} mb-4">
+                    <x-ui.alert :tone="$subscriptionCompany->hasActiveSubscription() ? 'info' : 'warning'" class="mb-4">
                         @if($subscriptionCompany->hasActiveSubscription())
                             This workspace is active. An early renewal keeps the workspace live and extends the next access window from the current expiry date.
                         @else
                             This workspace has expired. Every user under the workspace is blocked from normal access until the annual renewal payment is confirmed.
                         @endif
-                    </div>
+                    </x-ui.alert>
 
                     <div class="d-flex flex-wrap gap-2">
                         @if($paystackConfigured)
                             <form method="POST" action="{{ route('companies.subscription.renew', $subscriptionCompany->slug) }}">
                                 @csrf
-                                <button type="submit" class="btn btn-primary">
+                                <x-ui.button type="submit" variant="primary">
                                     {{ $subscriptionCompany->hasActiveSubscription() ? 'Renew Early With Paystack' : 'Renew Workspace With Paystack' }}
-                                </button>
+                                </x-ui.button>
                             </form>
                         @else
-                            <button type="button" class="btn btn-secondary" disabled>Paystack Not Configured Yet</button>
+                            <x-ui.button type="button" variant="secondary" disabled>Paystack Not Configured Yet</x-ui.button>
                         @endif
 
                         @if($subscriptionCompany->hasActiveSubscription())
-                            <a href="{{ route('companies.login', $subscriptionCompany->slug) }}" class="btn btn-outline-secondary">Go to Workspace Login</a>
+                            <x-ui.button variant="outline-secondary" :href="route('companies.login', $subscriptionCompany->slug)">Go to Workspace Login</x-ui.button>
                         @else
-                            <a href="{{ url('/') }}" class="btn btn-outline-secondary">Back Home</a>
+                            <x-ui.button variant="outline-secondary" :href="url('/')">Back Home</x-ui.button>
                         @endif
                     </div>
                 </div>
-            </div>
+            </x-ui.card>
         </div>
     </div>
 </div>

@@ -396,6 +396,9 @@ a.ui-stat:focus-visible {
 .ui-icon-btn--success:hover,
 .ui-icon-btn--success:focus-visible { color: var(--tone-success); border-color: var(--tone-success); background-color: var(--tone-success-bg); }
 
+.ui-icon-btn--warning:hover,
+.ui-icon-btn--warning:focus-visible { color: var(--tone-warning); border-color: var(--tone-warning); background-color: var(--tone-warning-bg); }
+
 .ui-icon-btn--ghost { border-color: transparent; background-color: transparent; }
 .ui-icon-btn--ghost:hover,
 .ui-icon-btn--ghost:focus-visible { border-color: transparent; background-color: var(--surface-2); }

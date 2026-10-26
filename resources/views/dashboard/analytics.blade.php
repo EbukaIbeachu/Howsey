@@ -2,27 +2,9 @@
 
 @section('content')
 <style>
-    .analytics-page .card {
-        border-radius: 0.75rem;
-    }
-
-    .analytics-page .card-header {
-        padding: 0.75rem 1rem;
-    }
-
-    .analytics-page .card-body {
-        padding: 0.9rem 1rem;
-    }
-
     .analytics-canvas-wrap {
         position: relative;
         height: 220px;
-    }
-
-    .analytics-summary-value {
-        font-size: 1.5rem;
-        font-weight: 700;
-        line-height: 1.2;
     }
 
     .analytics-note-list {
@@ -41,165 +23,98 @@
     }
 </style>
 
-<div class="analytics-page">
-<div id="analytics-header" class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-2 pb-1 mb-3 border-bottom">
-    <div>
-        <h1 class="h2 mb-1">Dashboard Analytics</h1>
-        <div class="text-muted small">Scope: {{ $analyticsSummary['scope_label'] }}</div>
-    </div>
-    <div class="ms-auto">
-        <a href="{{ route('dashboard') }}" class="btn btn-sm btn-outline-secondary">Back To Dashboard</a>
-    </div>
-</div>
+<x-ui.page-header
+    id="analytics-header"
+    title="Dashboard Analytics"
+    :subtitle="'Scope: '.$analyticsSummary['scope_label']"
+>
+    <x-slot:actions>
+        <x-ui.button variant="outline-secondary" size="sm" icon="bi bi-arrow-left" :href="route('dashboard')">Back To Dashboard</x-ui.button>
+    </x-slot:actions>
+</x-ui.page-header>
 
 <div id="analytics-summary-cards" class="row g-2 mb-3">
     <div class="col-md-3">
-        <div class="card shadow-sm border-0 h-100">
-            <div class="card-body">
-                <div class="text-muted text-uppercase small fw-semibold">Buildings In Scope</div>
-                <div class="analytics-summary-value">{{ $analyticsSummary['building_count'] }}</div>
-            </div>
-        </div>
+        <x-ui.stat-card label="Buildings In Scope" :value="$analyticsSummary['building_count']" icon="bi bi-buildings" tone="primary" />
     </div>
     <div class="col-md-3">
-        <div class="card shadow-sm border-0 h-100">
-            <div class="card-body">
-                <div class="text-muted text-uppercase small fw-semibold">Completed Payments</div>
-                <div class="analytics-summary-value">{{ number_format($analyticsSummary['payment_count']) }}</div>
-            </div>
-        </div>
+        <x-ui.stat-card label="Completed Payments" :value="number_format($analyticsSummary['payment_count'])" icon="bi bi-cash-stack" tone="info" />
     </div>
     <div class="col-md-3">
-        <div class="card shadow-sm border-0 h-100">
-            <div class="card-body">
-                <div class="text-muted text-uppercase small fw-semibold">Income Last 6 Months</div>
-                <div class="analytics-summary-value text-success">₦{{ number_format($analyticsSummary['last_six_months_income_total'], 2) }}</div>
-            </div>
-        </div>
+        <x-ui.stat-card label="Income Last 6 Months" :value="'₦'.number_format($analyticsSummary['last_six_months_income_total'], 2)" icon="bi bi-graph-up-arrow" tone="success" />
     </div>
     <div class="col-md-3">
-        <div class="card shadow-sm border-0 h-100">
-            <div class="card-body">
-                <div class="text-muted text-uppercase small fw-semibold">Expenses Last 6 Months</div>
-                <div class="analytics-summary-value text-danger">₦{{ number_format($analyticsSummary['last_six_months_expense_total'], 2) }}</div>
-            </div>
-        </div>
+        <x-ui.stat-card label="Expenses Last 6 Months" :value="'₦'.number_format($analyticsSummary['last_six_months_expense_total'], 2)" icon="bi bi-graph-down-arrow" tone="danger" />
     </div>
 </div>
 
-<div id="analytics-notes" class="card shadow-sm border-0 mb-3">
-    <div class="card-header bg-white">
-        <h5 class="mb-0">Analyst Notes</h5>
-    </div>
-    <div class="card-body">
-        <ul class="analytics-note-list">
-            @foreach($analyticsInsights as $insight)
-                <li>{{ $insight }}</li>
-            @endforeach
-        </ul>
-    </div>
-</div>
+<x-ui.card id="analytics-notes" title="Analyst Notes" class="mb-3">
+    <ul class="analytics-note-list">
+        @foreach($analyticsInsights as $insight)
+            <li>{{ $insight }}</li>
+        @endforeach
+    </ul>
+</x-ui.card>
 
 <div class="row g-2">
     <div class="col-lg-6">
-        <div class="card shadow-sm border-0 h-100">
-            <div id="analytics-building-revenue" class="card-header bg-white">
-                <h5 class="mb-0">Revenue By Building</h5>
+        <x-ui.card id="analytics-building-revenue" title="Revenue By Building" class="h-100">
+            <div class="analytics-canvas-wrap">
+                <canvas id="buildingRevenueChart"></canvas>
             </div>
-            <div class="card-body">
-                <div class="analytics-canvas-wrap">
-                    <canvas id="buildingRevenueChart"></canvas>
-                </div>
-            </div>
-        </div>
+        </x-ui.card>
     </div>
     <div class="col-lg-6">
-        <div class="card shadow-sm border-0 h-100">
-            <div id="analytics-monthly-trend" class="card-header bg-white">
-                <h5 class="mb-0">Monthly Revenue Trend</h5>
+        <x-ui.card id="analytics-monthly-trend" title="Monthly Revenue Trend" class="h-100">
+            <div class="analytics-canvas-wrap">
+                <canvas id="monthlyTrendChart"></canvas>
             </div>
-            <div class="card-body">
-                <div class="analytics-canvas-wrap">
-                    <canvas id="monthlyTrendChart"></canvas>
-                </div>
-            </div>
-        </div>
+        </x-ui.card>
     </div>
     <div class="col-lg-6">
-        <div class="card shadow-sm border-0 h-100">
-            <div id="analytics-yearly-trend" class="card-header bg-white">
-                <h5 class="mb-0">Yearly Revenue Trend</h5>
+        <x-ui.card id="analytics-yearly-trend" title="Yearly Revenue Trend" class="h-100">
+            <div class="analytics-canvas-wrap">
+                <canvas id="yearlyTrendChart"></canvas>
             </div>
-            <div class="card-body">
-                <div class="analytics-canvas-wrap">
-                    <canvas id="yearlyTrendChart"></canvas>
-                </div>
-            </div>
-        </div>
+        </x-ui.card>
     </div>
     <div class="col-lg-6">
-        <div class="card shadow-sm border-0 h-100">
-            <div id="analytics-payment-methods" class="card-header bg-white">
-                <h5 class="mb-0">Payments By Method</h5>
+        <x-ui.card id="analytics-payment-methods" title="Payments By Method" class="h-100">
+            <div class="analytics-canvas-wrap">
+                <canvas id="paymentMethodChart"></canvas>
             </div>
-            <div class="card-body">
-                <div class="analytics-canvas-wrap">
-                    <canvas id="paymentMethodChart"></canvas>
-                </div>
-                <div class="small text-muted mt-2">Tooltip shows both amount and number of payments.</div>
-            </div>
-        </div>
+            <div class="small text-muted mt-2">Tooltip shows both amount and number of payments.</div>
+        </x-ui.card>
     </div>
     <div class="col-lg-6">
-        <div class="card shadow-sm border-0 h-100">
-            <div id="analytics-overdue-balances" class="card-header bg-white">
-                <h5 class="mb-0">Overdue Balances By Building</h5>
+        <x-ui.card id="analytics-overdue-balances" title="Overdue Balances By Building" class="h-100">
+            <div class="analytics-canvas-wrap">
+                <canvas id="overdueBalanceChart"></canvas>
             </div>
-            <div class="card-body">
-                <div class="analytics-canvas-wrap">
-                    <canvas id="overdueBalanceChart"></canvas>
-                </div>
-            </div>
-        </div>
+        </x-ui.card>
     </div>
     <div class="col-lg-6">
-        <div class="card shadow-sm border-0 h-100">
-            <div id="analytics-occupancy" class="card-header bg-white">
-                <h5 class="mb-0">Occupancy Rate By Building</h5>
+        <x-ui.card id="analytics-occupancy" title="Occupancy Rate By Building" class="h-100">
+            <div class="analytics-canvas-wrap">
+                <canvas id="occupancyChart"></canvas>
             </div>
-            <div class="card-body">
-                <div class="analytics-canvas-wrap">
-                    <canvas id="occupancyChart"></canvas>
-                </div>
-            </div>
-        </div>
+        </x-ui.card>
     </div>
     <div class="col-lg-6">
-        <div class="card shadow-sm border-0 h-100">
-            <div id="analytics-tenant-distribution" class="card-header bg-white">
-                <h5 class="mb-0">Tenant Distribution</h5>
+        <x-ui.card id="analytics-tenant-distribution" title="Tenant Distribution" class="h-100">
+            <div class="analytics-canvas-wrap">
+                <canvas id="tenantDistributionChart"></canvas>
             </div>
-            <div class="card-body">
-                <div class="analytics-canvas-wrap">
-                    <canvas id="tenantDistributionChart"></canvas>
-                </div>
-            </div>
-        </div>
+        </x-ui.card>
     </div>
     <div class="col-lg-6">
-        <div class="card shadow-sm border-0 h-100">
-            <div id="analytics-income-expenses" class="card-header bg-white">
-                <h5 class="mb-0">Income Vs Expenses</h5>
+        <x-ui.card id="analytics-income-expenses" title="Income Vs Expenses" class="h-100">
+            <div class="analytics-canvas-wrap">
+                <canvas id="incomeExpenseChart"></canvas>
             </div>
-            <div class="card-body">
-                <div class="analytics-canvas-wrap">
-                    <canvas id="incomeExpenseChart"></canvas>
-                </div>
-                <div class="small text-muted mt-2">Income combines rent payments and accounting income entries.</div>
-            </div>
-        </div>
+            <div class="small text-muted mt-2">Income combines rent payments and accounting income entries.</div>
+        </x-ui.card>
     </div>
-</div>
 </div>
 @endsection
 

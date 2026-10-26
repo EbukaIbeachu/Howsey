@@ -9,7 +9,8 @@
       icon    (string)        bootstrap-icons class (required)
       href    (string|null)   renders an <a> instead of a <button>
       type    (string)        button|submit|reset — only used when href is empty
-      variant (string)        default|danger|ghost — default "default"
+      variant (string)        default|danger|success|warning|ghost
+                              — default "default"
       size    (string|null)   null|sm|lg
 
     Any other attribute is passed through (e.g. data-bs-toggle for modals).

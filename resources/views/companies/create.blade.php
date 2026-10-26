@@ -17,10 +17,10 @@
         '#475569' => 'Slate Gray',
     ];
 @endphp
-<div class="pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2 mb-1">Create Company</h1>
-    <p class="text-muted mb-0">Onboard a new housing management company with branding, first admin, and optional imports.</p>
-</div>
+<x-ui.page-header
+    title="Create Company"
+    subtitle="Onboard a new housing management company with branding, first admin, and optional imports."
+/>
 
 <form method="POST" action="{{ route('companies.store') }}" enctype="multipart/form-data" autocomplete="off">
     @csrf
@@ -28,118 +28,114 @@
     <input type="password" name="fake_password" autocomplete="current-password" class="d-none" tabindex="-1" aria-hidden="true">
     <div class="row g-4">
         <div class="col-12 col-xl-7">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header">Step 1: Company Profile</div>
-                <div class="card-body row g-3">
+            <x-ui.card title="Step 1: Company Profile" class="mb-4">
+                <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label">Company Name</label>
-                        <input type="text" id="company_name" name="name" class="form-control" value="{{ old('name') }}" oninput="document.getElementById('email_header').value = this.value; syncCompanyRegistrationFields();" onchange="document.getElementById('email_header').value = this.value; syncCompanyRegistrationFields();" required>
+                        <x-ui.form.input
+                            name="name"
+                            id="company_name"
+                            label="Company Name"
+                            oninput="document.getElementById('email_header').value = this.value; syncCompanyRegistrationFields();"
+                            onchange="document.getElementById('email_header').value = this.value; syncCompanyRegistrationFields();"
+                            required
+                        />
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Workspace Slug</label>
-                        <input type="text" name="slug" class="form-control" value="{{ old('slug') }}" placeholder="acme-housing">
+                        <x-ui.form.input name="slug" label="Workspace Slug" placeholder="acme-housing" />
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Primary Color</label>
-                        <select name="primary_color" class="form-select">
+                        <x-ui.form.select name="primary_color" label="Primary Color" :value="'#7c3aed'">
                             @foreach($brandColorOptions as $colorValue => $colorLabel)
-                                <option value="{{ $colorValue }}" {{ old('primary_color', '#7c3aed') === $colorValue ? 'selected' : '' }}>
+                                <option value="{{ $colorValue }}" @selected(old('primary_color', '#7c3aed') === $colorValue)>
                                     {{ $colorLabel }} ({{ $colorValue }})
                                 </option>
                             @endforeach
-                        </select>
+                        </x-ui.form.select>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Company Logo</label>
-                        <input type="file" name="logo" class="form-control" accept="image/*">
+                        <x-ui.form.file name="logo" label="Company Logo" accept="image/*" />
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Support Email</label>
-                        <input type="email" name="support_email" class="form-control" value="{{ old('support_email') }}">
+                        <x-ui.form.input name="support_email" type="email" label="Support Email" />
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Support Phone</label>
-                        <input type="text" name="support_phone" class="form-control" value="{{ old('support_phone') }}">
+                        <x-ui.form.input name="support_phone" label="Support Phone" />
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Receipt Header</label>
-                        <input type="text" name="receipt_header" class="form-control" value="{{ old('receipt_header', 'Official Payment Receipt') }}">
+                        <x-ui.form.input name="receipt_header" label="Receipt Header" :value="'Official Payment Receipt'" />
                     </div>
+                    {{-- The hidden #email_header and the visible #email_header_display are
+                         kept as hand-written markup: the page script mirrors the visible
+                         value into the hidden field and tracks user edits via dataset. --}}
                     <div class="col-md-6">
-                        <label class="form-label">Email Header</label>
+                        <label class="ui-label" for="email_header_display">Email Header</label>
                         <input type="hidden" id="email_header" name="email_header" value="{{ old('email_header', old('name')) }}">
-                        <input type="text" id="email_header_display" class="form-control" value="{{ old('email_header', old('name')) }}" autocomplete="off" oninput="markEmailHeaderEdited(); document.getElementById('email_header').value = this.value;" onchange="markEmailHeaderEdited(); document.getElementById('email_header').value = this.value;">
-                        <div class="form-text">Auto-filled from the company name.</div>
+                        <input type="text" id="email_header_display" class="ui-input" value="{{ old('email_header', old('name')) }}" autocomplete="off" oninput="markEmailHeaderEdited(); document.getElementById('email_header').value = this.value;" onchange="markEmailHeaderEdited(); document.getElementById('email_header').value = this.value;">
+                        <span class="ui-hint">Auto-filled from the company name.</span>
                     </div>
                     <div class="col-12">
-                        <label class="form-label">Address</label>
-                        <textarea name="address" class="form-control" rows="3">{{ old('address') }}</textarea>
+                        <x-ui.form.textarea name="address" label="Address" :rows="3" />
                     </div>
                 </div>
-            </div>
+            </x-ui.card>
 
-            <div class="card shadow-sm mb-4">
-                <div class="card-header">Step 2: First Admin User</div>
-                <div class="card-body row g-3">
+            <x-ui.card title="Step 2: First Admin User" class="mb-4">
+                <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label">Admin Name</label>
-                        <input type="text" id="admin_name" name="admin_name" class="form-control" value="{{ old('admin_name') }}" autocomplete="name" oninput="syncCompanyRegistrationFields();" onchange="syncCompanyRegistrationFields();" required>
+                        <x-ui.form.input
+                            name="admin_name"
+                            id="admin_name"
+                            label="Admin Name"
+                            autocomplete="name"
+                            oninput="syncCompanyRegistrationFields();"
+                            onchange="syncCompanyRegistrationFields();"
+                            required
+                        />
                     </div>
+                    {{-- The hidden #admin_email and the read-only #admin_email_display are
+                         kept as hand-written markup because the page script writes both
+                         by id (the display field intentionally submits nothing). --}}
                     <div class="col-md-6">
-                        <label class="form-label">Admin Email</label>
+                        <label class="ui-label" for="admin_email_display">Admin Email</label>
                         <input type="hidden" id="admin_email" name="admin_email" value="">
-                        <input type="text" id="admin_email_display" class="form-control" value="" autocomplete="off" readonly>
-                        <div class="form-text">Generated automatically from the admin full name and workspace slug. Do not forget this Account ID.</div>
+                        <input type="text" id="admin_email_display" class="ui-input" value="" autocomplete="off" readonly>
+                        <span class="ui-hint">Generated automatically from the admin full name and workspace slug. Do not forget this Account ID.</span>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Admin Phone</label>
-                        <input type="text" name="admin_phone" class="form-control" value="{{ old('admin_phone') }}">
-                        <div class="form-text">Use a login phone number the workspace admin will remember. Password recovery depends on this number.</div>
+                        <x-ui.form.input
+                            name="admin_phone"
+                            label="Admin Phone"
+                            hint="Use a login phone number the workspace admin will remember. Password recovery depends on this number."
+                        />
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Password</label>
-                        <input type="password" name="admin_password" class="form-control" required>
+                        <x-ui.form.input name="admin_password" type="password" label="Password" required />
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Confirm Password</label>
-                        <input type="password" name="admin_password_confirmation" class="form-control" required>
+                        <x-ui.form.input name="admin_password_confirmation" type="password" label="Confirm Password" required />
                     </div>
                 </div>
-            </div>
+            </x-ui.card>
         </div>
 
         <div class="col-12 col-xl-5">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header">Step 3: Optional Imports</div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label">Buildings CSV</label>
-                        <input type="file" name="buildings_csv" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Units CSV</label>
-                        <input type="file" name="units_csv" class="form-control">
-                    </div>
-                    <div class="mb-0">
-                        <label class="form-label">Tenants CSV</label>
-                        <input type="file" name="tenants_csv" class="form-control">
-                    </div>
-                </div>
-            </div>
+            <x-ui.card title="Step 3: Optional Imports" class="mb-4">
+                <x-ui.form.file name="buildings_csv" label="Buildings CSV" class="mb-3" />
+                <x-ui.form.file name="units_csv" label="Units CSV" class="mb-3" />
+                <x-ui.form.file name="tenants_csv" label="Tenants CSV" />
+            </x-ui.card>
 
-            <div class="card shadow-sm mb-4">
-                <div class="card-header">Step 4: Demo Experience</div>
-                <div class="card-body">
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" name="sample_dataset" value="1" id="sample_dataset" {{ old('sample_dataset') ? 'checked' : '' }}>
-                        <label class="form-check-label" for="sample_dataset">Load sample dataset for demo accounts</label>
-                    </div>
-                    <p class="small text-muted mt-3 mb-0">This creates a ready-to-tour company workspace with a sample building and units.</p>
-                </div>
-            </div>
+            <x-ui.card title="Step 4: Demo Experience" class="mb-4">
+                <x-ui.form.checkbox
+                    name="sample_dataset"
+                    label="Load sample dataset for demo accounts"
+                    :checked="old('sample_dataset')"
+                />
+                <p class="small text-muted mt-3 mb-0">This creates a ready-to-tour company workspace with a sample building and units.</p>
+            </x-ui.card>
 
             <div class="d-grid">
-                <button type="submit" class="btn btn-primary btn-lg">Create Company Workspace</button>
+                <x-ui.button type="submit" variant="primary" size="lg" block>Create Company Workspace</x-ui.button>
             </div>
         </div>
     </div>
