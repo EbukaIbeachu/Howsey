@@ -119,7 +119,7 @@
                             <tr>
                                 <th>Date</th>
                                 <th>Amount</th>
-                                <th>Method</th>
+                                <th class="d-none d-md-table-cell">Method</th>
                                 <th>Receipt</th>
                             </tr>
                         </thead>
@@ -128,7 +128,7 @@
                             <tr>
                                 <td>{{ $payment->payment_date->format('M d, Y') }}</td>
                                 <td class="text-success fw-bold">₦{{ number_format($payment->amount, 2) }}</td>
-                                <td>{{ $payment->payment_method ?? 'N/A' }}</td>
+                                <td class="d-none d-md-table-cell">{{ $payment->payment_method ?? 'N/A' }}</td>
                                 <td>
                                     @if(strtoupper((string) $payment->status) === 'COMPLETED')
                                         <a href="{{ route('payments.receipt', $payment) }}" class="btn btn-sm btn-outline-success">

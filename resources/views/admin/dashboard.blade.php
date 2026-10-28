@@ -441,31 +441,59 @@
             window.howseyRevenueChartInitialized = true;
 
             var ctx = canvas.getContext('2d');
+            var series = @json($chartDatasets);
+            var palette = [
+                { border: '#7c3aed', fill: 'rgba(124, 58, 237, 0.12)' },
+                { border: '#2563eb', fill: 'rgba(37, 99, 235, 0.12)' },
+                { border: '#059669', fill: 'rgba(5, 150, 105, 0.12)' },
+                { border: '#d97706', fill: 'rgba(217, 119, 6, 0.12)' },
+                { border: '#dc2626', fill: 'rgba(220, 38, 38, 0.12)' }
+            ];
+            var multiBuilding = series.length > 1;
+
             new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: @json($chartLabels),
-                    datasets: [{
-                        label: 'Revenue Collected (â‚¦)',
-                        data: @json($chartData),
-                        backgroundColor: 'rgba(124, 58, 237, 0.1)',
-                        borderColor: '#7c3aed',
-                        borderWidth: 2,
-                        tension: 0.3,
-                        fill: true,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#7c3aed',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6
-                    }]
+                    datasets: series.map(function (item, index) {
+                        var colors = palette[index % palette.length];
+
+                        return {
+                            label: item.label,
+                            data: item.data,
+                            backgroundColor: colors.fill,
+                            borderColor: colors.border,
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: !multiBuilding,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: colors.border,
+                            pointBorderWidth: 2,
+                            pointRadius: multiBuilding ? 3 : 4,
+                            pointHoverRadius: 6
+                        };
+                    })
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
                     plugins: {
                         legend: {
-                            display: false
+                            display: multiBuilding,
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 8,
+                                padding: 14,
+                                font: {
+                                    size: 12,
+                                    family: "'Nunito', sans-serif"
+                                }
+                            }
                         },
                         tooltip: {
                             backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -478,7 +506,7 @@
                                 size: 13,
                                 family: "'Nunito', sans-serif"
                             },
-                            displayColors: false,
+                            displayColors: true,
                             callbacks: {
                                 label: function(context) {
                                     var label = context.dataset.label || '';
@@ -506,9 +534,9 @@
                                     family: "'Nunito', sans-serif"
                                 },
                                 callback: function(value, index, values) {
-                                    if (value >= 1000000) return 'â‚¦' + (value/1000000).toFixed(1) + 'M';
-                                    if (value >= 1000) return 'â‚¦' + (value/1000).toFixed(0) + 'k';
-                                    return 'â‚¦' + value;
+                                    if (value >= 1000000) return '₦' + (value/1000000).toFixed(1) + 'M';
+                                    if (value >= 1000) return '₦' + (value/1000).toFixed(0) + 'k';
+                                    return '₦' + value;
                                 }
                             }
                         },

@@ -270,9 +270,9 @@ class DashboardController extends Controller
             }
         }
 
-        $revenueSeries = $this->lastSixMonthsRevenueSeries($isManager, $buildingIds);
-        $chartData = $revenueSeries['data'];
+        $revenueSeries = $this->topBuildingsRevenueSeries($isManager, $buildingIds);
         $chartLabels = $revenueSeries['labels'];
+        $chartDatasets = $revenueSeries['datasets'];
 
         // Recent Payments
         $recentPayments = $this->recentPaymentsQuery($isManager, $buildingIds)
@@ -285,7 +285,7 @@ class DashboardController extends Controller
         // Pending Requests (Placeholder)
         $requests = [];
 
-        return view('admin.dashboard', compact('stats', 'recentPayments', 'overdueRents', 'requests', 'chartData', 'chartLabels', 'dashboardAnnouncements', 'platformCompanyCount'));
+        return view('admin.dashboard', compact('stats', 'recentPayments', 'overdueRents', 'requests', 'chartLabels', 'chartDatasets', 'dashboardAnnouncements', 'platformCompanyCount'));
     }
 
     private function tenantDashboard()
@@ -620,29 +620,82 @@ class DashboardController extends Controller
         return $query;
     }
 
-    private function lastSixMonthsRevenueSeries(bool $isManager, $buildingIds): array
+    /**
+     * Builds one six-month revenue line per building so buildings can be
+     * compared against each other on the dashboard chart. Only the highest
+     * earning buildings are returned, to keep the chart readable.
+     */
+    private function topBuildingsRevenueSeries(bool $isManager, $buildingIds, int $limit = 5): array
     {
         $startMonth = now()->subMonths(5)->startOfMonth();
-        $monthlyRevenue = $this->scopedPaymentsQuery($isManager, $buildingIds)
-            ->where('payment_date', '>=', $startMonth)
-            ->selectRaw('DATE_FORMAT(payment_date, "%Y-%m") as month_key, SUM(amount) as total')
-            ->groupBy('month_key')
-            ->orderBy('month_key')
-            ->pluck('total', 'month_key')
-            ->all();
 
         $labels = [];
-        $data = [];
+        $monthKeys = [];
         for ($i = 5; $i >= 0; $i--) {
             $date = now()->subMonths($i);
-            $monthKey = $date->format('Y-m');
+            $monthKeys[] = $date->format('Y-m');
             $labels[] = $date->format('M Y');
-            $data[] = (float) ($monthlyRevenue[$monthKey] ?? 0);
+        }
+
+        $query = Payment::query()
+            ->join('rents', 'payments.rent_id', '=', 'rents.id')
+            ->join('units', 'rents.unit_id', '=', 'units.id')
+            ->join('buildings', 'units.building_id', '=', 'buildings.id')
+            ->where('payments.status', 'COMPLETED')
+            ->where('payments.payment_date', '>=', $startMonth);
+
+        if ($isManager) {
+            $query->whereIn('units.building_id', $buildingIds);
+        }
+
+        $rows = $query
+            ->selectRaw('buildings.id as building_id, buildings.name as building_name, DATE_FORMAT(payments.payment_date, "%Y-%m") as month_key, SUM(payments.amount) as total')
+            ->groupBy('buildings.id', 'buildings.name', 'month_key')
+            ->get();
+
+        $byBuilding = [];
+        foreach ($rows as $row) {
+            $buildingId = (int) $row->building_id;
+            if (! isset($byBuilding[$buildingId])) {
+                $byBuilding[$buildingId] = [
+                    'name' => (string) $row->building_name,
+                    'months' => [],
+                    'total' => 0.0,
+                ];
+            }
+
+            $amount = (float) $row->total;
+            $byBuilding[$buildingId]['months'][(string) $row->month_key] = $amount;
+            $byBuilding[$buildingId]['total'] += $amount;
+        }
+
+        uasort($byBuilding, function ($a, $b) {
+            return $b['total'] <=> $a['total'];
+        });
+
+        $datasets = [];
+        foreach (array_slice($byBuilding, 0, $limit, true) as $building) {
+            $data = [];
+            foreach ($monthKeys as $monthKey) {
+                $data[] = (float) ($building['months'][$monthKey] ?? 0);
+            }
+
+            $datasets[] = [
+                'label' => $building['name'],
+                'data' => $data,
+            ];
+        }
+
+        if (empty($datasets)) {
+            $datasets[] = [
+                'label' => 'No Revenue Data',
+                'data' => array_fill(0, count($labels), 0),
+            ];
         }
 
         return [
             'labels' => $labels,
-            'data' => $data,
+            'datasets' => $datasets,
         ];
     }
 
