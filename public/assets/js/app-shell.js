@@ -641,14 +641,31 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         const body = document.body;
-        const themes = ['light', 'dark'];
+        const themeToggleBtn = document.getElementById('mobileThemeToggle');
+        const themes = ['light', 'dark', 'autumn'];
+        let currentTheme;
         let themeRefreshTimer = null;
+
+        function updateThemeButtonIcon(theme) {
+            if (!themeToggleBtn) {
+                return;
+            }
+            if (theme === 'dark') {
+                themeToggleBtn.innerHTML = '<i class="bi bi-moon-stars"></i>';
+            } else if (theme === 'autumn') {
+                themeToggleBtn.innerHTML = '<i class="bi bi-cloud-sun-fill"></i>';
+            } else {
+                themeToggleBtn.innerHTML = '<i class="bi bi-brightness-high"></i>';
+            }
+        }
 
         function applyTheme(theme) {
             themes.forEach(function (value) {
                 body.classList.remove('theme-' + value);
             });
             body.classList.add('theme-' + theme);
+            currentTheme = theme;
+            updateThemeButtonIcon(theme);
         }
 
         function refreshThemeFromCurrentTime() {
@@ -656,9 +673,11 @@
         }
 
         function getThemeForHour(hour) {
-            // Light through the day, dark overnight.
-            if (hour >= 6 && hour < 18) {
+            if (hour >= 6 && hour < 11) {
                 return 'light';
+            }
+            if (hour >= 11 && hour < 18) {
+                return 'autumn';
             }
             return 'dark';
         }
@@ -670,6 +689,8 @@
             let nextChangeHour;
             if (hour < 6) {
                 nextChangeHour = 6;
+            } else if (hour < 11) {
+                nextChangeHour = 11;
             } else if (hour < 18) {
                 nextChangeHour = 18;
             } else {
@@ -688,6 +709,14 @@
         }
 
         refreshThemeFromCurrentTime();
+
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', function () {
+                const index = themes.indexOf(currentTheme);
+                const nextIndex = (index + 1) % themes.length;
+                applyTheme(themes[nextIndex]);
+            });
+        }
 
         ['visibilitychange', 'pageshow', 'focus'].forEach(function (eventName) {
             window.addEventListener(eventName, function () {

@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 
     <!-- Styles -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -51,7 +51,7 @@
         $enablePwaUi = true;
         $enablePwaInstallUi = $enablePwaUi;
         $enablePwaNotificationUi = $enablePwaUi && Auth::check();
-        $shellAssetVersion = '20261026-a11y';
+        $shellAssetVersion = '20261020-watermark-visible';
         $shortcutRoutes = Auth::check()
             ? [
                 'home' => url('/'),
@@ -102,7 +102,6 @@
 
     <link rel="preload" href="{{ asset('assets/css/app-shell.css') }}?v={{ $shellAssetVersion }}" as="style">
     <link rel="stylesheet" href="{{ asset('assets/css/app-shell.css') }}?v={{ $shellAssetVersion }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/components.css') }}?v={{ $shellAssetVersion }}">
     <style>
         :root {
             --primary-color: {{ $brandPrimary }};
@@ -120,7 +119,163 @@
             --shell-card-bg: rgba(255, 255, 255, 0.92);
             --shell-hover-bg: rgba(var(--brand-primary-rgb), 0.08);
         }
-        /* Shell CSS moved to public/assets/css/app-shell.css (Phase 2). */
+        .howsey-loader-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+        html.app-shell-loading .howsey-loader-overlay,
+        .howsey-loader-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: all;
+        }
+        .howsey-loader-overlay .loader {
+            width: 36px;
+            aspect-ratio: 1;
+            position: relative;
+        }
+        .howsey-loader-overlay .loader::before,
+        .howsey-loader-overlay .loader::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: var(--primary-color);
+            box-shadow: 0 0 18px rgba(var(--brand-primary-rgb), 0.28);
+        }
+        .howsey-loader-overlay .loader::before {
+            box-shadow: -52px 0 var(--primary-color), 0 0 18px rgba(var(--brand-primary-rgb), 0.28);
+            animation: howsey-loader-orbit-left 1.5s infinite linear;
+        }
+        .howsey-loader-overlay .loader::after {
+            transform: rotate(0deg) translateX(52px);
+            animation: howsey-loader-orbit-right 1.5s infinite linear;
+        }
+        @keyframes howsey-loader-orbit-left {
+            50% {
+                transform: translateX(52px);
+            }
+        }
+        @keyframes howsey-loader-orbit-right {
+            100% {
+                transform: rotate(-360deg) translateX(52px);
+            }
+        }
+        .shortcut-key {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2.2rem;
+            padding: 0.3rem 0.55rem;
+            border-radius: 999px;
+            border: 1px solid rgba(124, 58, 237, 0.18);
+            background: rgba(124, 58, 237, 0.08);
+            color: #5b21b6;
+            font-size: 0.8rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .shortcut-plus {
+            color: #6b7280;
+            font-weight: 700;
+        }
+        .shortcut-row + .shortcut-row {
+            border-top: 1px solid #eef2f7;
+        }
+        .brand-logo {
+            width: 2rem;
+            height: 2rem;
+            object-fit: contain;
+            border-radius: 0.75rem;
+            background: rgba(255, 255, 255, 0.92);
+            padding: 0.2rem;
+            box-shadow: 0 0.35rem 1rem rgba(15, 23, 42, 0.14);
+        }
+        .app-sticky-header {
+            background: linear-gradient(180deg, rgba(var(--brand-primary-rgb), 0.16), rgba(255, 255, 255, 0.90));
+        }
+        .workspace-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.45rem 0.8rem;
+            border-radius: 999px;
+            background: rgba(var(--brand-primary-rgb), 0.10);
+            border: 1px solid rgba(var(--brand-primary-rgb), 0.16);
+            color: #4c1d95;
+            font-size: 0.82rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .workspace-switcher {
+            min-width: 18rem;
+            max-width: 100%;
+        }
+        .workspace-switcher .form-select {
+            border-radius: 999px;
+            border-color: rgba(var(--brand-primary-rgb), 0.18);
+            background-color: rgba(255, 255, 255, 0.92);
+            font-weight: 600;
+        }
+        .sidebar {
+            background: linear-gradient(180deg, rgba(var(--brand-primary-rgb), 0.90), rgba(var(--brand-primary-rgb), 0.70));
+            color: var(--on-primary);
+        }
+        .nav-header {
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.14), rgba(255, 255, 255, 0.10));
+            color: var(--on-primary);
+        }
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.16);
+        }
+        .sidebar .btn,
+        .sidebar .btn-outline-light,
+        .sidebar .small,
+        .sidebar .text-white-50,
+        .sidebar .nav-header .btn,
+        .sidebar .sidebar-user,
+        .sidebar .sidebar-user .text-muted,
+        .sidebar .form-select,
+        .sidebar .form-select option {
+            color: var(--on-primary) !important;
+        }
+        .sidebar .text-white-50,
+        .sidebar .sidebar-user .text-muted,
+        .sidebar .nav-item-header,
+        .sidebar .nav-item > span.text-uppercase {
+            color: var(--on-primary-muted) !important;
+        }
+        .sidebar .btn-outline-light,
+        .sidebar .form-select {
+            border-color: rgba(var(--on-primary-rgb), 0.28) !important;
+        }
+        .sidebar .btn-outline-light:hover,
+        .sidebar .btn-outline-light:focus {
+            color: var(--on-primary) !important;
+            border-color: rgba(var(--on-primary-rgb), 0.46) !important;
+            background: rgba(var(--on-primary-rgb), 0.10) !important;
+        }
+        .sidebar .form-select {
+            background-color: rgba(var(--on-primary-rgb), 0.08);
+            box-shadow: none;
+        }
+        .sidebar .form-select option {
+            background-color: #ffffff;
+            color: #111827 !important;
+        }
     </style>
     <script>
         document.documentElement.classList.add('app-shell-loading');
@@ -146,8 +301,8 @@
         @auth
         <div class="mobile-header app-sticky-header d-lg-none d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center">
-                <button class="sidebar-toggle" id="sidebarToggleBtn" onclick="toggleSidebar()" aria-label="Open navigation menu" title="Open navigation menu">
-                    <i class="bi bi-list" aria-hidden="true"></i>
+                <button class="sidebar-toggle" id="sidebarToggleBtn" onclick="toggleSidebar()">
+                    <i class="bi bi-list"></i>
                 </button>
                 <div class="ms-3 fw-bold text-primary fs-5">
                     <a href="{{ $branding['company_portal_url'] ?? url('/') }}" class="text-decoration-none text-primary d-flex align-items-center gap-2">
@@ -191,8 +346,8 @@
                         @endif
                         <span class="brand-title">{{ $brandDisplayName }}</span>
                     </span>
-                    <button class="btn btn-sm text-white" onclick="toggleSidebar()" aria-label="Close navigation menu" title="Close navigation menu">
-                        <i class="bi bi-x-lg" aria-hidden="true"></i>
+                    <button class="btn btn-sm text-white" onclick="toggleSidebar()">
+                        <i class="bi bi-x-lg"></i>
                     </button>
                 </div>
                 <div class="pt-2 sidebar-content">
@@ -201,11 +356,7 @@
                         $primaryWorkspaceLabel = Auth::user()->isAccountant() ? 'Accounting' : 'Dashboard';
                         $homePortalUrl = $branding['company_portal_url'] ?? url('/');
                     @endphp
-                    {{-- Navigation is grouped by area of work. Every @can / @permission / @if
-                         gate below is unchanged from the pre-redesign sidebar; the groups are
-                         presentational and x-shell.nav-group hides its own heading when all of
-                         its items were filtered out, so no empty section can appear. --}}
-                    <x-shell.nav-group label="Workspace" icon="bi-grid-1x2">
+                    <ul class="nav flex-column">
                         <li class="nav-item">
                             <a class="nav-link" href="{{ $homePortalUrl }}">
                                 <i class="bi bi-house me-2"></i> Home
@@ -216,91 +367,6 @@
                                 <i class="bi bi-speedometer2 me-2"></i> {{ $primaryWorkspaceLabel }}
                             </a>
                         </li>
-                    </x-shell.nav-group>
-
-                    <x-shell.nav-group label="Portfolio" icon="bi-houses">
-                        @if(!Auth::user()->isSuperAdmin())
-                        @permission('buildings.view')
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('buildings.*') ? 'active' : '' }}" href="{{ route('buildings.index') }}">
-                                <i class="bi bi-houses me-2"></i> Buildings
-                            </a>
-                        </li>
-                        @endpermission
-                        @permission('tenants.view')
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('tenants.*') ? 'active' : '' }}" href="{{ route('tenants.index') }}">
-                                <i class="bi bi-people me-2"></i> Tenants
-                            </a>
-                        </li>
-                        @endpermission
-                        @permission('rentals.view')
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('rents.*') ? 'active' : '' }}" href="{{ route('rents.index') }}">
-                                <i class="bi bi-file-earmark-text me-2"></i> Rentals
-                            </a>
-                        </li>
-                        @endpermission
-                        @endif
-                    </x-shell.nav-group>
-
-                    <x-shell.nav-group label="Finance" icon="bi-cash-coin">
-                        @if(!Auth::user()->isSuperAdmin())
-                        @permission('payments.view')
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('payments.*') ? 'active' : '' }}" href="{{ route('payments.index') }}">
-                                <i class="bi bi-cash-stack me-2"></i> Payments
-                            </a>
-                        </li>
-                        @endpermission
-                        @endif
-
-                        @if(!Auth::user()->isSuperAdmin() && (Auth::user()->isAdmin() || Auth::user()->isManager()) && Route::has('payment-claims.index'))
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('payment-claims.*') ? 'active' : '' }}" href="{{ route('payment-claims.index') }}">
-                                <i class="bi bi-receipt-cutoff me-2"></i> Payment Claims
-                            </a>
-                        </li>
-                        @endif
-
-                        @if(!Auth::user()->isSuperAdmin() && (Auth::user()->isAdmin() || Auth::user()->isAccountant()))
-                        @permission('accounting.view')
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('accounting.*') ? 'active' : '' }}" href="{{ route('accounting.index') }}">
-                                <i class="bi bi-calculator me-2"></i> Accounting
-                            </a>
-                        </li>
-                        @endpermission
-                        @endif
-                    </x-shell.nav-group>
-
-                    <x-shell.nav-group label="Operations" icon="bi-tools">
-                        @if(!Auth::user()->isSuperAdmin() && !Auth::user()->isTenant())
-                        @permission('maintenance.view')
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('maintenance.*') ? 'active' : '' }}" href="{{ route('maintenance.index') }}">
-                                <i class="bi bi-tools me-2"></i> Maintenance
-                            </a>
-                        </li>
-                        @endpermission
-                        @endif
-
-                        @if(Auth::user()->isTenant())
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('maintenance.*') ? 'active' : '' }}" href="{{ route('maintenance.index') }}">
-                                <i class="bi bi-tools me-2"></i> Request Maintenance
-                            </a>
-                        </li>
-                        @endif
-
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('messages.*') ? 'active' : '' }}" href="{{ route('messages.index') }}">
-                                <i class="bi bi-chat-dots me-2"></i> Messages
-                            </a>
-                        </li>
-                    </x-shell.nav-group>
-
-                    <x-shell.nav-group label="Administration" icon="bi-shield-lock">
                         @can('viewAny', \App\Models\Company::class)
                             <li class="nav-item px-3 mt-2 mb-1">
                                 <a class="btn btn-sm btn-light w-100 text-start fw-semibold d-flex align-items-center justify-content-between" href="{{ route('companies.index') }}">
@@ -331,6 +397,63 @@
                                     </select>
                                 </form>
                             </li>
+                        @endif
+                        @if(!Auth::user()->isSuperAdmin())
+                        @permission('buildings.view')
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('buildings.*') ? 'active' : '' }}" href="{{ route('buildings.index') }}">
+                                <i class="bi bi-houses me-2"></i> Buildings
+                            </a>
+                        </li>
+                        @endpermission
+                        @permission('tenants.view')
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('tenants.*') ? 'active' : '' }}" href="{{ route('tenants.index') }}">
+                                <i class="bi bi-people me-2"></i> Tenants
+                            </a>
+                        </li>
+                        @endpermission
+                        @permission('rentals.view')
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('rents.*') ? 'active' : '' }}" href="{{ route('rents.index') }}">
+                                <i class="bi bi-file-earmark-text me-2"></i> Rentals
+                            </a>
+                        </li>
+                        @endpermission
+                        @endif
+
+                        @if(!Auth::user()->isSuperAdmin())
+                        @permission('payments.view')
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('payments.*') ? 'active' : '' }}" href="{{ route('payments.index') }}">
+                                <i class="bi bi-cash-stack me-2"></i> Payments
+                            </a>
+                        </li>
+                        @endpermission
+                        @endif
+
+                        @if(!Auth::user()->isSuperAdmin() && (Auth::user()->isAdmin() || Auth::user()->isManager()) && Route::has('payment-claims.index'))
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('payment-claims.*') ? 'active' : '' }}" href="{{ route('payment-claims.index') }}">
+                                <i class="bi bi-receipt-cutoff me-2"></i> Payment Claims
+                            </a>
+                        </li>
+                        @endif
+
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('messages.*') ? 'active' : '' }}" href="{{ route('messages.index') }}">
+                                <i class="bi bi-chat-dots me-2"></i> Messages
+                            </a>
+                        </li>
+
+                        @if(!Auth::user()->isSuperAdmin() && !Auth::user()->isTenant())
+                        @permission('maintenance.view')
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('maintenance.*') ? 'active' : '' }}" href="{{ route('maintenance.index') }}">
+                                <i class="bi bi-tools me-2"></i> Maintenance
+                            </a>
+                        </li>
+                        @endpermission
                         @endif
                         @if(!Auth::user()->isSuperAdmin())
                         @permission('users.view')
@@ -370,7 +493,25 @@
                                 </a>
                             </li>
                         @endif
-                    </x-shell.nav-group>
+
+                        @if(!Auth::user()->isSuperAdmin() && (Auth::user()->isAdmin() || Auth::user()->isAccountant()))
+                        @permission('accounting.view')
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('accounting.*') ? 'active' : '' }}" href="{{ route('accounting.index') }}">
+                                <i class="bi bi-calculator me-2"></i> Accounting
+                            </a>
+                        </li>
+                        @endpermission
+                        @endif
+
+                        @if(Auth::user()->isTenant())
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('maintenance.*') ? 'active' : '' }}" href="{{ route('maintenance.index') }}">
+                                <i class="bi bi-tools me-2"></i> Request Maintenance
+                            </a>
+                        </li>
+                        @endif
+                    </ul>
 
                     <hr class="text-white">
                     <div class="px-3 pb-3 sidebar-user">
@@ -407,8 +548,8 @@
                 @auth
                 <!-- Desktop Collapsed Header -->
                 <div id="desktopHeader" class="app-sticky-header d-none d-lg-flex align-items-center mb-0 pb-2 border-bottom">
-                    <button class="sidebar-toggle me-3" onclick="toggleSidebar()" aria-label="Toggle navigation menu" title="Toggle navigation menu">
-                        <i class="bi bi-list" aria-hidden="true"></i>
+                    <button class="sidebar-toggle me-3" onclick="toggleSidebar()">
+                        <i class="bi bi-list"></i>
                     </button>
                     <span class="h4 mb-0 text-primary fw-bold d-flex align-items-center gap-2">
                         @if($brandLogoUrl)
@@ -437,7 +578,7 @@
                         </div>
                     @endif
 
-                    <div class="topbar-actions ms-auto me-3 d-flex align-items-center gap-2">
+                    <div class="ms-auto me-3 d-flex align-items-center gap-2">
                         <button
                             type="button"
                             class="btn btn-outline-secondary btn-sm"
@@ -446,13 +587,36 @@
                             title="Keyboard shortcuts"
                             aria-label="Keyboard shortcuts"
                         >
-                            <i class="bi bi-keyboard me-1" aria-hidden="true"></i> Shortcuts
+                            <i class="bi bi-keyboard me-1"></i> Shortcuts
                         </button>
-
-                        <x-shell.notification-dropdown
-                            :count="$globalNotificationCount ?? 0"
-                            :notifications="$globalUnreadNotifications ?? collect()"
-                        />
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary btn-sm position-relative" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-bell"></i>
+                                @if(($globalNotificationCount ?? 0) > 0)
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ $globalNotificationCount }}</span>
+                                @endif
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end p-0 notification-dropdown-menu">
+                                <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                                    <span class="fw-semibold">Notifications</span>
+                                    @if(($globalNotificationCount ?? 0) > 0)
+                                        <form method="POST" action="{{ route('notifications.read-all') }}">
+                                            @csrf
+                                            <button type="submit" class="btn btn-link btn-sm text-decoration-none p-0">Mark all as read</button>
+                                        </form>
+                                    @endif
+                                </div>
+                                @forelse(($globalUnreadNotifications ?? collect()) as $notification)
+                                    <a href="{{ route('notifications.open', $notification->id) }}" class="dropdown-item px-3 py-2">
+                                        <div class="fw-semibold">{{ $notification->data['title'] ?? 'Notification' }}</div>
+                                        <div class="small text-muted notification-message">{{ $notification->data['message'] ?? 'A new item needs your attention.' }}</div>
+                                        <div class="small text-muted mt-1">{{ $notification->created_at?->diffForHumans() }}</div>
+                                    </a>
+                                @empty
+                                    <div class="px-3 py-3 text-muted small">No unread notifications.</div>
+                                @endforelse
+                            </div>
+                        </div>
 
                         @if(isset($globalAnnouncementCount) && $globalAnnouncementCount > 0)
                             <a
@@ -462,7 +626,7 @@
                                 title="Open announcements"
                                 aria-label="Open announcements"
                             >
-                                <i class="bi bi-megaphone-fill me-1" aria-hidden="true"></i>{{ $globalAnnouncementCount }}
+                                <i class="bi bi-megaphone-fill me-1"></i>{{ $globalAnnouncementCount }}
                             </a>
                         @endif
                     </div>
@@ -472,12 +636,35 @@
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom d-md-none">
                     <h1 class="h2 text-primary fw-bold">{{ Auth::user()->isAdmin() ? 'Admin' : (Auth::user()->isAccountant() ? 'Accounting' : (Auth::user()->isManager() ? 'Manager' : 'Tenant')) }}</h1>
 
-                    <div class="topbar-actions d-flex align-items-center ms-auto gap-2">
-                        <x-shell.notification-dropdown
-                            :count="$globalNotificationCount ?? 0"
-                            :notifications="$globalUnreadNotifications ?? collect()"
-                        />
-
+                    <div class="d-flex align-items-center ms-auto gap-2">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary btn-sm position-relative" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-bell"></i>
+                                @if(($globalNotificationCount ?? 0) > 0)
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ $globalNotificationCount }}</span>
+                                @endif
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end p-0 notification-dropdown-menu">
+                                <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                                    <span class="fw-semibold">Notifications</span>
+                                    @if(($globalNotificationCount ?? 0) > 0)
+                                        <form method="POST" action="{{ route('notifications.read-all') }}">
+                                            @csrf
+                                            <button type="submit" class="btn btn-link btn-sm text-decoration-none p-0">Mark all as read</button>
+                                        </form>
+                                    @endif
+                                </div>
+                                @forelse(($globalUnreadNotifications ?? collect()) as $notification)
+                                    <a href="{{ route('notifications.open', $notification->id) }}" class="dropdown-item px-3 py-2">
+                                        <div class="fw-semibold">{{ $notification->data['title'] ?? 'Notification' }}</div>
+                                        <div class="small text-muted notification-message">{{ $notification->data['message'] ?? 'A new item needs your attention.' }}</div>
+                                        <div class="small text-muted mt-1">{{ $notification->created_at?->diffForHumans() }}</div>
+                                    </a>
+                                @empty
+                                    <div class="px-3 py-3 text-muted small">No unread notifications.</div>
+                                @endforelse
+                            </div>
+                        </div>
                         @if(isset($globalAnnouncementCount) && $globalAnnouncementCount > 0)
                             <a
                                 id="announcement-badge-mobile"
@@ -486,7 +673,7 @@
                                 title="Open announcements"
                                 aria-label="Open announcements"
                             >
-                                <i class="bi bi-megaphone-fill me-1" aria-hidden="true"></i>{{ $globalAnnouncementCount }}
+                                <i class="bi bi-megaphone-fill me-1"></i>{{ $globalAnnouncementCount }}
                             </a>
                         @endif
                     </div>
@@ -521,8 +708,8 @@
                 @auth
                     @if(!request()->routeIs('dashboard') && !auth()->user()->isAccountant())
                         <div class="mb-2">
-                            <a href="javascript:history.back()" class="text-decoration-none text-secondary" aria-label="Go back" title="Go back">
-                                <i class="bi bi-arrow-left fs-5" aria-hidden="true"></i>
+                            <a href="javascript:history.back()" class="text-decoration-none text-secondary">
+                                <i class="bi bi-arrow-left fs-5"></i>
                             </a>
                         </div>
                     @endif
@@ -664,23 +851,23 @@
     @if($enableChatbot)
         <!-- Chatbot Widget HTML -->
         <div id="chatbot-widget">
-            <button id="chatbot-toggle" type="button" aria-label="Open assistant chat" title="Open assistant chat">
-                <i class="bi bi-chat-dots-fill" aria-hidden="true"></i>
+            <button id="chatbot-toggle" type="button">
+                <i class="bi bi-chat-dots-fill"></i>
             </button>
         </div>
 
         <div id="chatbot-window">
             <div id="chatbot-header">
                 <span class="fw-bold"><i class="bi bi-robot me-2"></i>{{ $brandDisplayName }} Assistant</span>
-                <button class="btn btn-sm text-white" type="button" data-chatbot-close aria-label="Close assistant chat" title="Close assistant chat">
-                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                <button class="btn btn-sm text-white" type="button" data-chatbot-close>
+                    <i class="bi bi-x-lg"></i>
                 </button>
             </div>
             <div id="chatbot-messages"></div>
             <div id="chatbot-input-area">
                 <input type="text" id="chatbot-input" placeholder="Type your message...">
-                <button id="chatbot-send" type="button" aria-label="Send message" title="Send message">
-                    <i class="bi bi-send-fill" aria-hidden="true"></i>
+                <button id="chatbot-send" type="button">
+                    <i class="bi bi-send-fill"></i>
                 </button>
             </div>
         </div>

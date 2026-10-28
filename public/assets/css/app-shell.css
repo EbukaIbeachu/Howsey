@@ -22,69 +22,10 @@
     --shell-border-color: rgba(33, 37, 41, 0.12);
     --shell-input-bg: #ffffff;
     --shell-input-border: rgba(33, 37, 41, 0.16);
-
-    /* ============================================================
-       Design tokens (Phase 2 — frontend redesign)
-       An additive layer on top of the existing --shell-* variables.
-       --primary-* / --on-primary-* are injected per company from PHP
-       in layouts/app.blade.php, so they are deliberately NOT redefined
-       here beyond the neutral fallback values above.
-       ============================================================ */
-
-    /* typography */
-    --font-ui: 'Inter', 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    --font-display: 'Playfair Display', Georgia, serif;
-
-    /* surfaces */
-    --surface-0: #ffffff;
-    --surface-1: #f8fafc;
-    --surface-2: #f1f5f9;
-    --border-subtle: #e2e8f0;
-    --border-strong: #cbd5e1;
-
-    /* text */
-    --text-strong: #0f172a;
-    --text-body: #334155;
-    --text-muted: #64748b;
-
-    /* status tones — solid AA-contrast foreground on a soft background.
-       Components always pair these with an icon + text label, never colour alone. */
-    --tone-success: #047857;
-    --tone-success-bg: #ecfdf5;
-    --tone-success-rgb: 4, 120, 87;
-    --tone-warning: #b45309;
-    --tone-warning-bg: #fffbeb;
-    --tone-warning-rgb: 180, 83, 9;
-    --tone-danger: #b91c1c;
-    --tone-danger-bg: #fef2f2;
-    --tone-danger-rgb: 185, 28, 28;
-    --tone-info: #1d4ed8;
-    --tone-info-bg: #eff6ff;
-    --tone-info-rgb: 29, 78, 216;
-
-    /* radius */
-    --radius-sm: 6px;
-    --radius-md: 10px;
-    --radius-lg: 14px;
-
-    /* elevation */
-    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
-    --shadow-md: 0 2px 10px rgba(15, 23, 42, 0.06);
-    --shadow-lg: 0 12px 24px rgba(15, 23, 42, 0.10);
-
-    /* spacing scale (4px base) */
-    --space-1: 0.25rem;
-    --space-2: 0.5rem;
-    --space-3: 0.75rem;
-    --space-4: 1rem;
-    --space-5: 1.5rem;
-    --space-6: 2rem;
-    --space-7: 3rem;
-    --space-8: 4rem;
 }
 
 body {
-    font-family: var(--font-ui);
+    font-family: 'Nunito', sans-serif;
     background-color: var(--bg-light);
     background-image: none;
     color: var(--system-text-color);
@@ -113,6 +54,17 @@ body {
         --shell-table-head-bg: rgba(248, 249, 250, 0.94);
         --shell-table-head-color: #495057;
         --shell-hover-bg: rgba(var(--brand-primary-rgb), 0.08);
+    }
+    body.theme-autumn {
+        --system-overlay-start: rgba(255, 229, 191, 0.60);
+        --system-overlay-end: rgba(255, 183, 121, 0.72);
+        --system-text-color: #31210f;
+        --shell-header-bg: rgba(255, 245, 231, 0.88);
+        --shell-main-bg: rgba(255, 247, 238, 0.44);
+        --shell-card-bg: rgba(255, 251, 245, 0.92);
+        --shell-table-head-bg: rgba(255, 240, 222, 0.94);
+        --shell-table-head-color: #7a4420;
+        --shell-hover-bg: rgba(217, 119, 6, 0.10);
     }
     body.theme-dark {
         --system-overlay-start: rgba(255, 255, 255, 0.55);
@@ -751,7 +703,10 @@ body {
 
 .howsey-loader-overlay {
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(10px);
     z-index: 9999;
@@ -766,7 +721,6 @@ body {
     transition: opacity 0.2s ease, visibility 0.2s ease;
 }
 
-html.app-shell-loading .howsey-loader-overlay,
 .howsey-loader-overlay.visible {
     opacity: 1;
     visibility: visible;
@@ -794,7 +748,7 @@ html.app-shell-loading .howsey-loader-overlay,
 }
 
 .loader::before {
-    box-shadow: -52px 0 var(--primary-color), 0 0 18px rgba(var(--brand-primary-rgb), 0.28);
+    box-shadow: -52px 0 var(--primary-color);
     animation: l10-1 1.5s infinite linear;
 }
 
@@ -814,248 +768,3 @@ html.app-shell-loading .howsey-loader-overlay,
         transform: rotate(-360deg) translateX(52px);
     }
 }
-
-/* ==========================================================================
-   Shell layout rules moved out of layouts/app.blade.php (Phase 2)
-   --------------------------------------------------------------------------
-   These previously lived in an inline <style> block that the layout emitted
-   AFTER this stylesheet loaded, so they already won over the rules above.
-   They are appended here in the same order to preserve the existing cascade
-   exactly. The per-company custom properties they depend on (--primary-color,
-   --on-primary, --on-primary-rgb, ...) are still injected from PHP in the
-   layout, because those values are dynamic.
-   ========================================================================== */
-
-.shortcut-key {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 2.2rem;
-    padding: 0.3rem 0.55rem;
-    border-radius: 999px;
-    border: 1px solid rgba(124, 58, 237, 0.18);
-    background: rgba(124, 58, 237, 0.08);
-    color: #5b21b6;
-    font-size: 0.8rem;
-    font-weight: 700;
-    line-height: 1;
-}
-
-.shortcut-plus {
-    color: #6b7280;
-    font-weight: 700;
-}
-
-.shortcut-row + .shortcut-row {
-    border-top: 1px solid #eef2f7;
-}
-
-.brand-logo {
-    width: 2rem;
-    height: 2rem;
-    object-fit: contain;
-    border-radius: 0.75rem;
-    background: rgba(255, 255, 255, 0.92);
-    padding: 0.2rem;
-    box-shadow: 0 0.35rem 1rem rgba(15, 23, 42, 0.14);
-}
-
-.app-sticky-header {
-    background: linear-gradient(180deg, rgba(var(--brand-primary-rgb), 0.16), rgba(255, 255, 255, 0.90));
-}
-
-.workspace-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.45rem 0.8rem;
-    border-radius: 999px;
-    background: rgba(var(--brand-primary-rgb), 0.10);
-    border: 1px solid rgba(var(--brand-primary-rgb), 0.16);
-    color: #4c1d95;
-    font-size: 0.82rem;
-    font-weight: 700;
-    white-space: nowrap;
-}
-
-.workspace-switcher {
-    min-width: 18rem;
-    max-width: 100%;
-}
-
-.workspace-switcher .form-select {
-    border-radius: 999px;
-    border-color: rgba(var(--brand-primary-rgb), 0.18);
-    background-color: rgba(255, 255, 255, 0.92);
-    font-weight: 600;
-}
-
-.sidebar {
-    /* Solid brand fill, not a translucent gradient. Blending the brand colour
-       over whatever sits behind the sidebar dropped the effective contrast of
-       the sidebar text to roughly 3.3:1 against a light page — below the 4.5:1
-       WCAG AA floor. A solid fill keeps the text at ~5.7:1 for the default
-       brand and makes the result independent of the page behind it. */
-    background: var(--primary-color);
-    color: var(--on-primary);
-}
-
-.nav-header {
-    background: linear-gradient(90deg, rgba(0, 0, 0, 0.14), rgba(255, 255, 255, 0.10));
-    color: var(--on-primary);
-}
-
-.sidebar .nav-link:hover,
-.sidebar .nav-link.active {
-    background: rgba(255, 255, 255, 0.16);
-}
-
-.sidebar .btn,
-.sidebar .btn-outline-light,
-.sidebar .small,
-.sidebar .text-white-50,
-.sidebar .nav-header .btn,
-.sidebar .sidebar-user,
-.sidebar .sidebar-user .text-muted,
-.sidebar .form-select,
-.sidebar .form-select option {
-    color: var(--on-primary) !important;
-}
-
-.sidebar .text-white-50,
-.sidebar .sidebar-user .text-muted,
-.sidebar .nav-item-header,
-.sidebar .nav-item > span.text-uppercase {
-    color: var(--on-primary-muted) !important;
-}
-
-.sidebar .btn-outline-light,
-.sidebar .form-select {
-    border-color: rgba(var(--on-primary-rgb), 0.28) !important;
-}
-
-.sidebar .btn-outline-light:hover,
-.sidebar .btn-outline-light:focus {
-    color: var(--on-primary) !important;
-    border-color: rgba(var(--on-primary-rgb), 0.46) !important;
-    background: rgba(var(--on-primary-rgb), 0.10) !important;
-}
-
-.sidebar .form-select {
-    background-color: rgba(var(--on-primary-rgb), 0.08);
-    box-shadow: none;
-}
-
-.sidebar .form-select option {
-    background-color: #ffffff;
-    color: #111827 !important;
-}
-
-/* ==========================================================================
-   Accessibility foundation (Phase 2)
-   ========================================================================== */
-
-/* A single, consistent keyboard focus ring for every interactive element. */
-:focus-visible {
-    outline: 2px solid var(--primary-color, #7c3aed);
-    outline-offset: 2px;
-}
-
-/* Text inputs already draw a brand focus ring via :focus; avoid doubling it. */
-.form-control:focus-visible,
-.form-select:focus-visible {
-    outline: none;
-}
-
-/* On the tinted sidebar the brand colour can be low-contrast; use on-primary. */
-.sidebar :focus-visible {
-    outline-color: var(--on-primary);
-}
-
-/* Respect the user's motion preference. */
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-    }
-}
-
-/* ==========================================================================
-   App shell — sidebar groups and topbar (Phase 4 — frontend redesign)
-   ========================================================================== */
-
-/* --- Sidebar navigation groups (x-shell.nav-group) ----------------------- */
-
-.nav-group + .nav-group {
-    margin-top: 0.9rem;
-}
-
-.nav-group-title {
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.3rem 1.25rem 0.35rem;
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    /* Readable on the tinted sidebar in both light and dark themes. */
-    color: rgba(255, 255, 255, 0.5);
-}
-
-.nav-group-title .bi {
-    font-size: 0.875rem;
-    opacity: 0.85;
-}
-
-/* Align the label text of every entry regardless of its icon's width. */
-.nav-group .nav-link {
-    display: flex;
-    align-items: center;
-}
-
-.nav-group .nav-link .bi {
-    width: 1.15rem;
-    text-align: center;
-    opacity: 0.92;
-}
-
-/* --- Topbar ------------------------------------------------------------- */
-
-.topbar-actions {
-    min-width: 0;
-}
-
-.topbar-actions > * {
-    flex: 0 0 auto;
-}
-
-.notification-toggle .badge {
-    font-size: 0.625rem;
-    padding: 0.2em 0.42em;
-}
-
-.notification-dropdown-menu {
-    overflow: hidden;
-}
-
-.notification-dropdown-menu .dropdown-item + .dropdown-item {
-    border-top: 1px solid var(--border-subtle, rgba(33, 37, 41, 0.08));
-}
-
-.notification-dropdown-menu .dropdown-item:hover,
-.notification-dropdown-menu .dropdown-item:focus {
-    background: var(--shell-hover-bg);
-}
-
-.announcement-badge {
-    display: inline-flex;
-    align-items: center;
-    font-size: 0.75rem;
-    padding: 0.4em 0.7em;
-}
-

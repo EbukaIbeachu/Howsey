@@ -1,75 +1,78 @@
 @extends('layouts.app')
 
 @section('content')
-@php
-    $headers = [
-        'Matched Account ID',
-        'Phone',
-        'Linked User',
-        'Status',
-        'Submitted',
-        'Reviewed By',
-        'Actions',
-    ];
-@endphp
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Password Recovery Requests</h1>
+</div>
 
-<x-ui.page-header title="Password Recovery Requests" />
-
-<x-ui.card flush>
-    <x-ui.table :headers="$headers" caption="Password recovery requests" :caption-sr="true">
-        <tbody>
-            @forelse($requests as $recoveryRequest)
-                @php
-                    $statusTone = match ($recoveryRequest->status) {
-                        'approved' => 'success',
-                        'rejected' => 'danger',
-                        default => 'warning',
-                    };
-                @endphp
-                <tr>
-                    <td>{{ $recoveryRequest->email }}</td>
-                    <td>{{ $recoveryRequest->phone }}</td>
-                    <td>
-                        {{ $recoveryRequest->user?->name ?? 'No matching user yet' }}
-                        @if($recoveryRequest->user?->company)
-                            <div class="small text-muted">{{ $recoveryRequest->user->company->name }}</div>
-                        @endif
-                    </td>
-                    <td>
-                        <x-ui.status-badge :tone="$statusTone" :label="ucfirst($recoveryRequest->status)" />
-                    </td>
-                    <td>{{ $recoveryRequest->created_at->format('d M Y, h:i A') }}</td>
-                    <td>{{ $recoveryRequest->reviewer?->name ?? 'Pending' }}</td>
-                    <td>
-                        @if($recoveryRequest->status === 'pending')
-                            <div class="ui-btn-group">
-                                <x-ui.button variant="outline-success" size="sm"
-                                    data-bs-toggle="modal" data-bs-target="#approveRecoveryRequest{{ $recoveryRequest->id }}">Approve</x-ui.button>
-                                <x-ui.button variant="outline-danger" size="sm"
-                                    data-bs-toggle="modal" data-bs-target="#rejectRecoveryRequest{{ $recoveryRequest->id }}">Reject</x-ui.button>
-                            </div>
-                        @else
-                            <span class="text-muted small">{{ $recoveryRequest->reviewed_at?->format('d M Y, h:i A') }}</span>
-                        @endif
-                    </td>
-                </tr>
-                @if($recoveryRequest->reviewer_notes)
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="bg-light">
                     <tr>
-                        <td colspan="7" class="bg-light-subtle">
-                            <strong>Reviewer Notes:</strong> {{ $recoveryRequest->reviewer_notes }}
-                        </td>
+                        <th>Matched Account ID</th>
+                        <th>Phone</th>
+                        <th>Linked User</th>
+                        <th>Status</th>
+                        <th>Submitted</th>
+                        <th>Reviewed By</th>
+                        <th>Actions</th>
                     </tr>
-                @endif
-            @empty
-                <x-ui.table.empty-state :colspan="7" icon="bi bi-shield-lock" title="No password recovery requests found." />
-            @endforelse
-        </tbody>
-    </x-ui.table>
-
-    @if($requests->hasPages())
-        <x-slot:footer>{{ $requests->links() }}</x-slot:footer>
-    @endif
-</x-ui.card>
+                </thead>
+                <tbody>
+                    @forelse($requests as $recoveryRequest)
+                        <tr>
+                            <td>{{ $recoveryRequest->email }}</td>
+                            <td>{{ $recoveryRequest->phone }}</td>
+                            <td>
+                                {{ $recoveryRequest->user?->name ?? 'No matching user yet' }}
+                                @if($recoveryRequest->user?->company)
+                                    <div class="small text-muted">{{ $recoveryRequest->user->company->name }}</div>
+                                @endif
+                            </td>
+                            <td>
+                                <span class="badge {{ $recoveryRequest->status === 'approved' ? 'bg-success' : ($recoveryRequest->status === 'rejected' ? 'bg-danger' : 'bg-warning text-dark') }}">
+                                    {{ ucfirst($recoveryRequest->status) }}
+                                </span>
+                            </td>
+                            <td>{{ $recoveryRequest->created_at->format('d M Y, h:i A') }}</td>
+                            <td>{{ $recoveryRequest->reviewer?->name ?? 'Pending' }}</td>
+                            <td>
+                                @if($recoveryRequest->status === 'pending')
+                                    <div class="d-flex gap-2">
+                                        <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#approveRecoveryRequest{{ $recoveryRequest->id }}">
+                                            Approve
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectRecoveryRequest{{ $recoveryRequest->id }}">
+                                            Reject
+                                        </button>
+                                    </div>
+                                @else
+                                    <span class="text-muted small">{{ $recoveryRequest->reviewed_at?->format('d M Y, h:i A') }}</span>
+                                @endif
+                            </td>
+                        </tr>
+                        @if($recoveryRequest->reviewer_notes)
+                            <tr>
+                                <td colspan="7" class="bg-light-subtle">
+                                    <strong>Reviewer Notes:</strong> {{ $recoveryRequest->reviewer_notes }}
+                                </td>
+                            </tr>
+                        @endif
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center py-4">No password recovery requests found.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        {{ $requests->links() }}
+    </div>
+</div>
 
 @foreach($requests as $recoveryRequest)
     @if($recoveryRequest->status === 'pending')
@@ -92,17 +95,22 @@
                                 <label class="form-label">Submitted Login Phone</label>
                                 <input type="text" class="form-control" value="{{ $recoveryRequest->phone }}" readonly>
                             </div>
-                            <x-ui.form.input name="temporary_password" type="password" label="New Temporary Password"
-                                :id="'temporary_password_'.$recoveryRequest->id" required />
-                            <x-ui.form.input name="temporary_password_confirmation" type="password" label="Confirm Temporary Password"
-                                :id="'temporary_password_confirmation_'.$recoveryRequest->id" required />
-                            <x-ui.form.textarea name="reviewer_notes" label="Reviewer Notes"
-                                :id="'reviewer_notes_approve_'.$recoveryRequest->id" :rows="3"
-                                placeholder="Optional approval note" />
+                            <div class="mb-3">
+                                <label for="temporary_password_{{ $recoveryRequest->id }}" class="form-label">New Temporary Password</label>
+                                <input type="password" class="form-control" id="temporary_password_{{ $recoveryRequest->id }}" name="temporary_password" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="temporary_password_confirmation_{{ $recoveryRequest->id }}" class="form-label">Confirm Temporary Password</label>
+                                <input type="password" class="form-control" id="temporary_password_confirmation_{{ $recoveryRequest->id }}" name="temporary_password_confirmation" required>
+                            </div>
+                            <div class="mb-0">
+                                <label for="reviewer_notes_approve_{{ $recoveryRequest->id }}" class="form-label">Reviewer Notes</label>
+                                <textarea class="form-control" id="reviewer_notes_approve_{{ $recoveryRequest->id }}" name="reviewer_notes" rows="3" placeholder="Optional approval note"></textarea>
+                            </div>
                         </div>
                         <div class="modal-footer">
-                            <x-ui.button variant="outline-secondary" data-bs-dismiss="modal">Cancel</x-ui.button>
-                            <x-ui.button type="submit" variant="success">Approve and Reset Password</x-ui.button>
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-success">Approve and Reset Password</button>
                         </div>
                     </form>
                 </div>
@@ -121,12 +129,14 @@
                         @method('PATCH')
                         <div class="modal-body">
                             <p class="text-muted">Add a reason for rejecting this request.</p>
-                            <x-ui.form.textarea name="reviewer_notes" label="Reviewer Notes"
-                                :id="'reviewer_notes_reject_'.$recoveryRequest->id" :rows="4" required />
+                            <div class="mb-0">
+                                <label for="reviewer_notes_reject_{{ $recoveryRequest->id }}" class="form-label">Reviewer Notes</label>
+                                <textarea class="form-control" id="reviewer_notes_reject_{{ $recoveryRequest->id }}" name="reviewer_notes" rows="4" required></textarea>
+                            </div>
                         </div>
                         <div class="modal-footer">
-                            <x-ui.button variant="outline-secondary" data-bs-dismiss="modal">Cancel</x-ui.button>
-                            <x-ui.button type="submit" variant="danger">Reject Request</x-ui.button>
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger">Reject Request</button>
                         </div>
                     </form>
                 </div>

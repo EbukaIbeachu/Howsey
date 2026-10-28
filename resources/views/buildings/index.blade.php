@@ -1,118 +1,132 @@
 @extends('layouts.app')
 
 @section('content')
-<style>
-    @media (max-width: 767.98px) {
-        #buildingsTable .mobile-portrait-hide {
-            display: none;
-        }
-    }
-</style>
-
-<x-ui.page-header title="Buildings" id="buildings-header">
-    <x-slot:actions>
-        <x-ui.button variant="outline-info" size="sm" icon="bi bi-question-circle" onclick="startTour()">Help</x-ui.button>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2" id="buildings-header">Buildings</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button class="btn btn-sm btn-outline-info me-2" onclick="startTour()">
+            <i class="bi bi-question-circle"></i> Help
+        </button>
         @permission('buildings.create')
-            <x-ui.button variant="primary" size="sm" icon="bi bi-plus-lg" :href="route('buildings.create')" id="add-building-btn">Add Building</x-ui.button>
+            <a href="{{ route('buildings.create') }}" class="btn btn-sm btn-primary" id="add-building-btn">
+                <i class="bi bi-plus-lg"></i> Add Building
+            </a>
         @endpermission
-    </x-slot:actions>
-</x-ui.page-header>
-
-<x-ui.card>
-    <div class="mb-3">
-        <input type="text" id="buildingSearch" class="form-control" placeholder="Search buildings...">
     </div>
+</div>
 
-    <x-ui.table id="buildingsTable" :striped="true" caption="Buildings" :caption-sr="true">
-        <thead>
-            <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Address</th>
-                <th scope="col" class="mobile-portrait-hide">Location</th>
-                @permission('buildings.delete')
-                <th scope="col" class="mobile-portrait-hide">Created By</th>
-                @endpermission
-                <th scope="col" class="text-center mobile-portrait-hide">Units</th>
-                <th scope="col" class="text-end mobile-portrait-hide">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($buildings as $building)
-            <tr>
-                <td>
-                    <a href="{{ route('buildings.show', $building) }}" class="text-decoration-none fw-bold">
-                        {{ $building->name }}
-                    </a>
-                </td>
-                <td>
-                    {{ $building->address_line1 }}
-                    @if($building->address_line2)
-                        <br><small class="text-muted">{{ $building->address_line2 }}</small>
-                    @endif
-                </td>
-                <td class="mobile-portrait-hide">
-                    {{ $building->city }}, {{ $building->state }} {{ $building->postal_code }}
-                </td>
-                @permission('buildings.delete')
-                <td class="mobile-portrait-hide">
-                    @if($building->creator)
-                        <div class="d-flex align-items-center">
-                            <div class="ms-2">
-                                <div class="fw-bold small">{{ $building->creator->name }}</div>
-                                <div class="text-muted" style="font-size: 0.75rem;">{{ $building->creator->role->name ?? 'User' }}</div>
-                            </div>
-                        </div>
-                    @else
-                        <span class="text-muted small fst-italic">System</span>
-                    @endif
-                </td>
-                @endpermission
-                <td class="text-center mobile-portrait-hide">
-                    <span class="badge bg-secondary">{{ $building->total_units }} Total</span>
-                    @if($building->active_units_count > 0)
-                        <span class="badge bg-success">{{ $building->active_units_count }} Occupied</span>
-                    @endif
-                </td>
-                <td class="text-end mobile-portrait-hide">
-                    <div class="ui-btn-group">
-                        <x-ui.icon-button label="View" icon="bi bi-eye" size="sm" :href="route('buildings.show', $building)" />
-                        @if(Auth::user()->isManager() && auth()->user()->hasPermission('buildings.edit'))
-                            @include('partials.manager-edit-request-button', [
-                                'recordType' => 'building',
-                                'recordId' => $building->id,
-                                'recordLabel' => $building->name,
-                                'buttonClass' => 'btn btn-sm btn-outline-warning',
-                                'buttonText' => 'Request Edit',
-                                'iconClass' => 'bi bi-pencil-square',
-                            ])
-                        @elseif(auth()->user()->hasPermission('buildings.edit'))
-                            <x-ui.icon-button label="Edit" icon="bi bi-pencil" size="sm" :href="route('buildings.edit', $building)" />
-                        @endif
+<div class="card shadow-sm">
+    <div class="card-body">
+        <style>
+            @media (max-width: 767.98px) {
+                #buildingsTable .mobile-portrait-hide {
+                    display: none;
+                }
+            }
+        </style>
+        <div class="mb-3">
+            <input type="text" id="buildingSearch" class="form-control" placeholder="Search buildings...">
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle" id="buildingsTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Address</th>
+                        <th class="mobile-portrait-hide">Location</th>
                         @permission('buildings.delete')
-                            <form action="{{ route('buildings.destroy', $building) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this building?');">
-                                @csrf
-                                @method('DELETE')
-                                <x-ui.icon-button type="submit" variant="danger" size="sm" icon="bi bi-trash" label="Delete" />
-                            </form>
+                        <th class="mobile-portrait-hide">Created By</th>
                         @endpermission
-                    </div>
-                </td>
-            </tr>
-            @empty
-            <x-ui.table.empty-state
-                :colspan="auth()->user()->hasPermission('buildings.delete') ? 6 : 5"
-                icon="bi bi-building"
-                title="No buildings found"
-                text='Click "Add Building" to create one.'
-            />
-            @endforelse
-        </tbody>
-    </x-ui.table>
-
-    <div class="mt-3">
-        {{ $buildings->links() }}
+                        <th class="text-center mobile-portrait-hide">Units</th>
+                        <th class="text-end mobile-portrait-hide">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($buildings as $building)
+                    <tr>
+                        <td>
+                            <a href="{{ route('buildings.show', $building) }}" class="text-decoration-none fw-bold">
+                                {{ $building->name }}
+                            </a>
+                        </td>
+                        <td>
+                            {{ $building->address_line1 }}
+                            @if($building->address_line2)
+                                <br><small class="text-muted">{{ $building->address_line2 }}</small>
+                            @endif
+                        </td>
+                        <td class="mobile-portrait-hide">
+                            {{ $building->city }}, {{ $building->state }} {{ $building->postal_code }}
+                        </td>
+                        @permission('buildings.delete')
+                        <td class="mobile-portrait-hide">
+                            @if($building->creator)
+                                <div class="d-flex align-items-center">
+                                    <div class="ms-2">
+                                        <div class="fw-bold small">{{ $building->creator->name }}</div>
+                                        <div class="text-muted" style="font-size: 0.75rem;">{{ $building->creator->role->name ?? 'User' }}</div>
+                                    </div>
+                                </div>
+                            @else
+                                <span class="text-muted small fst-italic">System</span>
+                            @endif
+                        </td>
+                        @endpermission
+                        <td class="text-center mobile-portrait-hide">
+                            <span class="badge bg-secondary">{{ $building->total_units }} Total</span>
+                            @if($building->active_units_count > 0)
+                                <span class="badge bg-success">{{ $building->active_units_count }} Occupied</span>
+                            @endif
+                        </td>
+                        <td class="text-end mobile-portrait-hide">
+                            <div class="btn-group">
+                                <a href="{{ route('buildings.show', $building) }}" class="btn btn-sm btn-outline-secondary" title="View">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                @if(Auth::user()->isManager() && auth()->user()->hasPermission('buildings.edit'))
+                                    @include('partials.manager-edit-request-button', [
+                                        'recordType' => 'building',
+                                        'recordId' => $building->id,
+                                        'recordLabel' => $building->name,
+                                        'buttonClass' => 'btn btn-sm btn-outline-warning',
+                                        'buttonText' => 'Request Edit',
+                                        'iconClass' => 'bi bi-pencil-square',
+                                    ])
+                                @elseif(auth()->user()->hasPermission('buildings.edit'))
+                                    <a href="{{ route('buildings.edit', $building) }}" class="btn btn-sm btn-outline-primary" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                @endif
+                                @permission('buildings.delete')
+                                    <form action="{{ route('buildings.destroy', $building) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this building?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                @endpermission
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    @php($colspan = auth()->user()->hasPermission('buildings.delete') ? 6 : 5)
+                    <tr>
+                        <td colspan="{{ $colspan }}" class="text-center py-4 text-muted">
+                            <i class="bi bi-building fs-1 d-block mb-2"></i>
+                            No buildings found. Click "Add Building" to create one.
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="mt-3">
+            {{ $buildings->links() }}
+        </div>
     </div>
-</x-ui.card>
+</div>
 
 @push('scripts')
 <script>
