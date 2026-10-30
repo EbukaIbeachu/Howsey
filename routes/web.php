@@ -110,6 +110,7 @@ Route::get('/', function () {
 
 Route::get('/company/register', [PublicCompanyRegistrationController::class, 'create'])->name('companies.public.create');
 Route::post('/company/register', [PublicCompanyRegistrationController::class, 'store'])->name('companies.public.store');
+Route::get('/company/register/created', [PublicCompanyRegistrationController::class, 'created'])->name('companies.public.created');
 Route::get('/company/register/paystack/callback', [PublicCompanyRegistrationController::class, 'paystackCallback'])->name('companies.public.paystack.callback');
 Route::get('/company/register/status/{companyApplication}', [PublicCompanyRegistrationController::class, 'applicationStatus'])->name('companies.public.application-status');
 Route::get('/company/subscription/paystack/callback', [CompanySubscriptionController::class, 'paystackCallback'])->name('companies.subscription.paystack.callback');

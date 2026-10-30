@@ -944,7 +944,7 @@
 
                                         <div class="mb-3">
                                             <label for="email" class="form-label">{{ $accountIdLabel }}</label>
-                                            <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email') }}" placeholder="name@company-slug.howsey.site" required autofocus>
+                                            <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email', $prefillAccountId ?? '') }}" placeholder="name@company-slug.howsey.site" required autofocus>
                                             @error('email')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror

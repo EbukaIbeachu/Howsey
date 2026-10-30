@@ -114,9 +114,28 @@ class PublicCompanyRegistrationController extends Controller
             $application->name.' created a new free workspace ('.$company->slug.'). Admin account: '.$application->admin_email.'.'
         );
 
+        // Show the generated Account ID on a confirmation page and keep it in the
+        // session so the workspace login form can pre-fill it for the new admin.
+        $request->session()->put('new_workspace', [
+            'name' => $company->name,
+            'slug' => $company->slug,
+            'account_id' => $application->admin_email,
+        ]);
+
         return redirect()
-            ->route('companies.login', $company->slug)
-            ->with('success', 'Your workspace is ready. Sign in with your Account ID and password to get started.');
+            ->route('companies.public.created')
+            ->with('success', 'Your workspace is ready.');
+    }
+
+    public function created(Request $request)
+    {
+        $newWorkspace = $request->session()->get('new_workspace');
+
+        if (! is_array($newWorkspace) || empty($newWorkspace['slug'])) {
+            return redirect()->route('companies.public.create');
+        }
+
+        return view('companies.created', compact('newWorkspace'));
     }
 
     public function paystackCallback(Request $request)

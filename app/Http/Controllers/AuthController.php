@@ -24,7 +24,14 @@ class AuthController extends Controller
             && ($request->query('entry') === 'company-admin'
                 || (bool) $request->session()->getOldInput('root_company_admin_access'));
 
-        return view('auth.login', compact('loginCompany', 'rootCompanyAdminAccess'));
+        $newWorkspace = $request->session()->get('new_workspace');
+        $prefillAccountId = is_array($newWorkspace)
+            && $loginCompany
+            && ($newWorkspace['slug'] ?? null) === $loginCompany->slug
+                ? (string) ($newWorkspace['account_id'] ?? '')
+                : '';
+
+        return view('auth.login', compact('loginCompany', 'rootCompanyAdminAccess', 'prefillAccountId'));
     }
 
     public function login(Request $request)
