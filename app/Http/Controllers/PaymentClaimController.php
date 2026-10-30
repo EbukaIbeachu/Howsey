@@ -79,7 +79,9 @@ class PaymentClaimController extends Controller
         $rent = $claim->rent()->with(['tenant.user', 'unit.building'])->first();
 
         $payment = DB::transaction(function () use ($claim, $rent, $user, $validated) {
-            $payment = Payment::create([
+            // Complete the onboarding placeholder for this period instead of
+            // inserting a second row, so the building financials stay clean.
+            $payment = Payment::recordAgainst($rent, [
                 'rent_id' => $claim->rent_id,
                 'amount' => $validated['amount'],
                 'payment_date' => $validated['payment_date'],

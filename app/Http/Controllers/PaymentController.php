@@ -208,8 +208,15 @@ class PaymentController extends Controller
             $validated['due_date'] = $rent->next_due_date ?? $rent->start_date;
         }
 
-        $payment = Payment::create($validated);
-        app(AuditLogService::class)->log('payment_created', $payment, null, $payment->toArray());
+        // Complete the onboarding placeholder for this period instead of adding a
+        // second row, so the building financials show one payment, not two.
+        $payment = Payment::recordAgainst($rent, $validated);
+        app(AuditLogService::class)->log(
+            $payment->wasRecentlyCreated ? 'payment_created' : 'payment_placeholder_completed',
+            $payment,
+            null,
+            $payment->toArray()
+        );
 
         if ($actor && ($actor->isAdmin() || $actor->isManager())) {
             $accountants = User::query()
