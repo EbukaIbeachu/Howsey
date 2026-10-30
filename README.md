@@ -1,6 +1,6 @@
 # HOWSEY
 
-HOWSEY is a white-label, multi-company property management SaaS built on Laravel 10. It supports company-specific onboarding, branding, role-based access, tenant-isolated data, and a PWA-style experience across desktop and mobile.
+HOWSEY is a free white-label, multi-company property management SaaS built on Laravel 10. It supports company-specific onboarding, branding, role-based access, tenant-isolated data, and a PWA-style experience across desktop and mobile.
 
 This codebase was originally a single-tenant property management system and has been upgraded into a shared-schema multi-tenant SaaS where each company operates in its own branded workspace.
 
