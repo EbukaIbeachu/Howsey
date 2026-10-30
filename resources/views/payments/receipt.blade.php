@@ -33,9 +33,9 @@
         }
         .toolbar {
             max-width: 880px;
-            margin: 0 auto 16px;
+            margin: 18px auto 0;
             display: flex;
-            justify-content: flex-end;
+            justify-content: center;
             flex-wrap: wrap;
             gap: 12px;
         }
@@ -43,20 +43,35 @@
         .toolbar a {
             border: 0;
             border-radius: 999px;
-            padding: 10px 16px;
+            padding: 11px 20px;
             font-size: 13px;
             font-weight: 700;
             text-decoration: none;
             cursor: pointer;
             text-align: center;
+            display: inline-block;
         }
-        .toolbar button {
+        .toolbar .btn-download-pdf {
+            background: #16a34a;
+            color: #ffffff;
+        }
+        .toolbar .btn-download-png {
+            background: #0f766e;
+            color: #ffffff;
+        }
+        .toolbar .btn-print-receipt {
             background: {{ $brandColor }};
             color: {{ $brandTextColor }};
         }
-        .toolbar a {
+        .toolbar .btn-close-receipt {
             background: #e5e7eb;
             color: #111827;
+        }
+        .toolbar .btn-download-pdf:hover,
+        .toolbar .btn-download-png:hover,
+        .toolbar .btn-print-receipt:hover,
+        .toolbar .btn-close-receipt:hover {
+            opacity: 0.9;
         }
         .receipt-header {
             border-bottom: 2px solid {{ $brandColor }};
@@ -138,7 +153,7 @@
                 border-radius: 10px;
             }
             .toolbar {
-                justify-content: stretch;
+                justify-content: center;
                 gap: 8px;
             }
             .toolbar button,
@@ -159,8 +174,44 @@
             .meta-table td {
                 padding: 0 0 12px;
             }
-            .details-table {
-                min-width: 560px;
+            .details-wrap {
+                overflow-x: visible;
+            }
+            .details-table,
+            .details-table tbody,
+            .details-table tr,
+            .details-table td {
+                display: block;
+                width: 100%;
+                min-width: 0;
+            }
+            .details-table thead {
+                display: none;
+            }
+            .details-table tr {
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+            .details-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 12px;
+                border: 0;
+                border-bottom: 1px solid #e5e7eb;
+            }
+            .details-table td:last-child {
+                border-bottom: 0;
+            }
+            .details-table td::before {
+                content: attr(data-label);
+                color: #6b7280;
+                font-size: 10px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                flex: 0 0 auto;
             }
             .amount {
                 font-size: 18px;
@@ -186,15 +237,6 @@
     </style>
 </head>
 <body>
-    @if(($renderMode ?? 'web') === 'web')
-    <div class="toolbar">
-        <a href="{{ route('payments.receipt', ['payment' => $payment, 'download' => 1]) }}" class="btn-download-pdf">Download PDF</a>
-        <button type="button" class="btn-download-png" style="display:none;background:#16a34a;color:#fff;">Download Image (PNG)</button>
-        <button type="button" onclick="window.print()">Print Receipt</button>
-        <a href="{{ $backUrl }}">Close Receipt</a>
-    </div>
-    @endif
-
     <div class="receipt-shell">
         <div class="receipt-header">
             <h1 class="brand">{{ $brandName }}</h1>
@@ -247,11 +289,11 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Rent payment receipt</td>
-                        <td>{{ $payment->reference ?: 'PAY-'.$payment->id }}</td>
-                        <td>{{ $payment->payment_method ? ucfirst(str_replace('_', ' ', $payment->payment_method)) : 'N/A' }}</td>
-                        <td>{{ optional($payment->due_date)->format('F d, Y') ?? 'N/A' }}</td>
-                        <td class="amount">N{{ number_format((float) $payment->amount, 2) }}</td>
+                        <td data-label="Description">Rent payment receipt</td>
+                        <td data-label="Reference">{{ $payment->reference ?: 'PAY-'.$payment->id }}</td>
+                        <td data-label="Method">{{ $payment->payment_method ? ucfirst(str_replace('_', ' ', $payment->payment_method)) : 'N/A' }}</td>
+                        <td data-label="Due Date">{{ optional($payment->due_date)->format('F d, Y') ?? 'N/A' }}</td>
+                        <td data-label="Amount" class="amount">₦{{ number_format((float) $payment->amount, 2) }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -264,6 +306,12 @@
     </div>
 
     @if(($renderMode ?? 'web') === 'web')
+    <div class="toolbar">
+        <a href="{{ route('payments.receipt', ['payment' => $payment, 'download' => 1]) }}" class="btn-download-pdf">Download Receipt (PDF)</a>
+        <button type="button" class="btn-download-png" style="display:none;">Download Image (PNG)</button>
+        <button type="button" class="btn-print-receipt">Print Receipt</button>
+        <a href="{{ $backUrl }}" class="btn-close-receipt">Close Receipt</a>
+    </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
         (function () {
@@ -288,19 +336,18 @@
                 }
             });
 
-            const printButton = document.querySelector('.toolbar button');
+            const printButton = document.querySelector('.btn-print-receipt');
             if (printButton) {
                 printButton.addEventListener('click', function () {
                     shouldReturnAfterPrint = true;
+                    window.print();
                 });
             }
 
-            // On mobile, replace the PDF download with a PNG capture of the receipt.
-            const pdfBtn = document.querySelector('.btn-download-pdf');
+            // On mobile, also offer a PNG capture of the receipt alongside the PDF.
             const pngBtn = document.querySelector('.btn-download-png');
 
-            if (isMobile && pdfBtn && pngBtn) {
-                pdfBtn.style.display = 'none';
+            if (isMobile && pngBtn) {
                 pngBtn.style.display = 'inline-block';
 
                 pngBtn.addEventListener('click', function () {

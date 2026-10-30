@@ -1562,34 +1562,4 @@
             resetTimer();
         });
     });
-
-    // On mobile, direct receipt PDF downloads are unreliable.
-    // Intercept those links and open the receipt view instead, where the
-    // mobile PNG download button handles the capture.
-    function isMobileReceiptContext() {
-        return window.matchMedia('(max-width: 768px)').matches ||
-            /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-    }
-
-    document.addEventListener('click', function (event) {
-        if (!isMobileReceiptContext()) {
-            return;
-        }
-
-        const link = event.target.closest('a[href*="/receipt"][href*="download=1"]');
-        if (!link) {
-            return;
-        }
-
-        event.preventDefault();
-        event.stopPropagation();
-
-        try {
-            const url = new URL(link.href, window.location.origin);
-            url.searchParams.delete('download');
-            window.location.href = url.toString();
-        } catch (e) {
-            window.location.href = link.getAttribute('href').replace(/[?&]download=1(&|$)/, '$1');
-        }
-    }, true);
 })();

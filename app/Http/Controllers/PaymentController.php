@@ -194,15 +194,18 @@ class PaymentController extends Controller
             'status' => 'nullable|in:COMPLETED,PENDING,FAILED',
         ]);
 
-        // Automatically set due_date to match the end of the lease date
         $rent = Rent::with(['tenant', 'unit.building'])->find($validated['rent_id']);
         if ($actor->isManager()) {
             if (! $rent || ! $rent->unit || ! $rent->unit->building || $rent->unit->building->manager_id !== $actor->id) {
                 abort(403, 'Unauthorized action.');
             }
         }
-        if ($rent && $rent->end_date) {
-            $validated['due_date'] = $rent->end_date;
+
+        // Attribute the payment to the rental period it settles. Using the rent's
+        // next due date keeps early (pre-paid) receipts meaningful; the lease end
+        // date was often null, which left the receipt Due Date blank.
+        if ($rent) {
+            $validated['due_date'] = $rent->next_due_date ?? $rent->start_date;
         }
 
         $payment = Payment::create($validated);

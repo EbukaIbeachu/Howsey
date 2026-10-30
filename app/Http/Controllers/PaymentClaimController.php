@@ -83,7 +83,7 @@ class PaymentClaimController extends Controller
                 'rent_id' => $claim->rent_id,
                 'amount' => $validated['amount'],
                 'payment_date' => $validated['payment_date'],
-                'due_date' => $rent?->end_date,
+                'due_date' => $rent?->next_due_date ?? $rent?->start_date,
                 'payment_method' => $validated['payment_method'] ?: ($claim->payment_method ?: 'BANK_TRANSFER'),
                 'status' => 'COMPLETED',
                 'reference' => $claim->reference ?: 'CLAIM-'.$claim->id,

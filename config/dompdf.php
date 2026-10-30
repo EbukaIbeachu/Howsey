@@ -109,8 +109,10 @@ return [
 
         /**
          * Whether to enable font subsetting or not.
+         * Enabled so generated receipts stay small (the full DejaVu Sans font
+         * is ~880 KB, which made downloading receipts slow on mobile data).
          */
-        'enable_font_subsetting' => false,
+        'enable_font_subsetting' => true,
 
         /**
          * The PDF rendering backend to use
