@@ -286,7 +286,7 @@
             position: fixed;
             left: 1rem;
             /* Sits above the masked HOWSEY badge pinned at the bottom-left corner. */
-            bottom: 3.75rem;
+            bottom: 5rem;
             z-index: 1040;
             display: flex;
             flex-direction: column;

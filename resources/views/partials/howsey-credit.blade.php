@@ -19,6 +19,13 @@
         object-fit: contain;
     }
 
+    @media (min-width: 769px) {
+        .howsey-credit img {
+            width: 44px;
+            height: 44px;
+        }
+    }
+
     .howsey-credit:hover img,
     .howsey-credit:focus-visible img {
         animation: howsey-credit-spin 0.7s ease-in-out;
