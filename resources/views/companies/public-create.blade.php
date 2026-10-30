@@ -159,10 +159,16 @@
             emailHeaderDisplayInput.dataset.lastAutoValue = emailHeaderDisplayInput.value.trim();
         }
 
-        function resolveAccountDomain() {
-            const slug = String(companySlugInput?.value || '').trim().toLowerCase()
+        function slugify(value) {
+            return String(value || '').trim().toLowerCase()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
                 .replace(/[^a-z0-9]+/g, '-')
                 .replace(/^-+|-+$/g, '');
+        }
+
+        function resolveAccountDomain() {
+            // Mirror the server: an empty workspace slug falls back to the company name.
+            const slug = slugify(companySlugInput?.value || '') || slugify(companyNameInput?.value || '');
 
             return slug ? `${slug}.howsey.site` : 'howsey.site';
         }
