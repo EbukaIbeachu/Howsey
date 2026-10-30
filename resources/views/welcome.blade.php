@@ -231,6 +231,12 @@
             color: var(--on-brand) !important;
             text-decoration-color: rgba(var(--on-brand-rgb), 0.45);
         }
+        /* Company URLs sit on top of the hero image, so keep them white. */
+        .hero-section .portal-links-card .small a,
+        .hero-section .portal-links-card-mobile .small a {
+            color: #ffffff !important;
+            text-decoration-color: rgba(255, 255, 255, 0.45);
+        }
         .role-option-card {
             border: 1px solid rgba(var(--brand-primary-rgb), 0.12);
             border-radius: 1rem;
