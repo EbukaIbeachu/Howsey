@@ -74,7 +74,7 @@ Important implementation pieces:
 
 Current major roles include:
 
-- `super_admin`
+- `super_admin` (there can be onle one) 1️⃣
 - `admin`
 - `manager`
 - `accountant`
