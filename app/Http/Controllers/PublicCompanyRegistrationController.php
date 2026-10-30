@@ -9,6 +9,7 @@ use App\Support\CompanyApplicationNotifier;
 use App\Support\CompanyOnboardingService;
 use App\Support\PaystackService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -23,11 +24,7 @@ class PublicCompanyRegistrationController extends Controller
 
     public function create()
     {
-        return view('companies.public-create', [
-            'paymentReference' => CompanyApplication::generatePaymentReference(),
-            'registrationFee' => $this->paystackService->registrationFee(),
-            'paystackConfigured' => $this->paystackService->enabled(),
-        ]);
+        return view('companies.public-create');
     }
 
     public function store(Request $request)
@@ -78,49 +75,48 @@ class PublicCompanyRegistrationController extends Controller
             ]);
         }
 
-        $application = CompanyApplication::create([
-            'name' => $validated['name'],
-            'slug' => $validated['slug'],
-            'logo_path' => $this->onboardingService->storeLogo($request->file('logo')),
-            'primary_color' => $validated['primary_color'] ?? '#7c3aed',
-            'address' => $validated['address'] ?? null,
-            'support_email' => $validated['support_email'] ?? null,
-            'support_phone' => $validated['support_phone'] ?? null,
-            'receipt_header' => $validated['receipt_header'] ?? 'Official Payment Receipt',
-            'email_header' => $validated['email_header'],
-            'admin_name' => $validated['admin_name'],
-            'admin_email' => $validated['admin_email'],
-            'admin_phone' => $validated['admin_phone'] ?? null,
-            'admin_password' => Hash::make($validated['admin_password']),
-            'sample_dataset' => $validated['sample_dataset'],
-            'payment_reference' => $validated['payment_reference'],
-            'payment_amount' => $this->paystackService->registrationFee(),
-            'application_status' => 'pending_payment',
-            'submitted_at' => now(),
-        ]);
+        [$application, $company] = DB::transaction(function () use ($validated, $request) {
+            $application = CompanyApplication::create([
+                'name' => $validated['name'],
+                'slug' => $validated['slug'],
+                'logo_path' => $this->onboardingService->storeLogo($request->file('logo')),
+                'primary_color' => $validated['primary_color'] ?? '#7c3aed',
+                'address' => $validated['address'] ?? null,
+                'support_email' => $validated['support_email'] ?? null,
+                'support_phone' => $validated['support_phone'] ?? null,
+                'receipt_header' => $validated['receipt_header'] ?? 'Official Payment Receipt',
+                'email_header' => $validated['email_header'],
+                'admin_name' => $validated['admin_name'],
+                'admin_email' => $validated['admin_email'],
+                'admin_phone' => $validated['admin_phone'] ?? null,
+                'admin_password' => Hash::make($validated['admin_password']),
+                'sample_dataset' => $validated['sample_dataset'],
+                'payment_reference' => $validated['payment_reference'],
+                'payment_amount' => 0,
+                'application_status' => 'approved',
+                'submitted_at' => now(),
+                'reviewed_at' => now(),
+                'approved_at' => now(),
+            ]);
+
+            // HOWSEY access is free: create the live workspace immediately so the
+            // admin can sign in right away with no payment and no approval queue.
+            $company = $this->onboardingService->createCompanyFromApplication($application);
+
+            $application->update(['company_id' => $company->id]);
+
+            return [$application->fresh(), $company];
+        });
 
         CompanyApplicationNotifier::notifySuperAdmins(
             $application,
-            'New company application',
-            $application->name.' submitted a new company application with payment reference '.$application->payment_reference.'.'
+            'New company workspace created',
+            $application->name.' created a new free workspace ('.$company->slug.'). Admin account: '.$application->admin_email.'.'
         );
 
-        try {
-            $paystackData = $this->paystackService->initializeCompanyApplicationPayment($application);
-        } catch (\Throwable $exception) {
-            report($exception);
-
-            return redirect()
-                ->route('companies.public.application-status', $application)
-                ->with('error', $exception->getMessage());
-        }
-
-        $application->update([
-            'paystack_access_code' => data_get($paystackData, 'access_code'),
-            'paystack_authorization_url' => data_get($paystackData, 'authorization_url'),
-        ]);
-
-        return redirect()->away((string) data_get($paystackData, 'authorization_url'));
+        return redirect()
+            ->route('companies.login', $company->slug)
+            ->with('success', 'Your workspace is ready. Sign in with your Account ID and password to get started.');
     }
 
     public function paystackCallback(Request $request)

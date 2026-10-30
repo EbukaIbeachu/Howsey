@@ -22,8 +22,8 @@
         <div class="col-12 col-xl-10">
             <div class="text-center mb-4">
                 <span class="badge rounded-pill bg-primary-subtle text-primary px-3 py-2">Launch Your Company Workspace</span>
-                <h1 class="display-6 fw-bold mt-3 mb-2">Apply for your HOWSEY company workspace</h1>
-                <p class="text-muted mb-0">Submit your company setup, pay the annual workspace fee through Paystack, and wait for super admin approval before the live workspace is created.</p>
+                <h1 class="display-6 fw-bold mt-3 mb-2">Create your free HOWSEY company workspace</h1>
+                <p class="text-muted mb-0">Submit your company setup and your workspace is created instantly. HOWSEY access is completely free, with no payment required.</p>
             </div>
 
             <form method="POST" action="{{ route('companies.public.store') }}" enctype="multipart/form-data" autocomplete="off">
@@ -120,32 +120,16 @@
                         <div class="card shadow-sm mb-4">
                             <div class="card-header bg-white fw-semibold">Workspace Setup</div>
                             <div class="card-body">
-                                <div class="row g-3 mb-3">
-                                    <div class="col-12">
-                                        <label class="form-label">Payment Reference</label>
-                                        <input type="text" id="payment_reference_display" class="form-control" value="{{ old('payment_reference', $paymentReference ?? '') }}" readonly>
-                                        <div class="form-text">This reference is auto-generated for your Paystack company onboarding payment.</div>
-                                    </div>
-                                    <div class="col-12">
-                                        <label class="form-label">Annual Workspace Fee</label>
-                                        <input type="text" class="form-control" value="NGN {{ number_format((float) ($registrationFee ?? 0), 2) }}" readonly>
-                                        <div class="form-text">Paystack will use this amount during checkout for the first {{ $subscriptionDurationMonths ?? 12 }} months of access.</div>
-                                    </div>
-                                </div>
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" name="sample_dataset" value="1" id="sample_dataset" {{ old('sample_dataset') ? 'checked' : '' }}>
                                     <label class="form-check-label" for="sample_dataset">Load sample property data for a guided demo</label>
                                 </div>
-                                <p class="small text-muted mt-3 mb-0">After payment, the super admin will review the application, confirm the Paystack reference, and only then create the real company workspace. Workspace access renews annually.</p>
+                                <p class="small text-muted mt-3 mb-0">Your workspace is created instantly and HOWSEY access is completely free. There is no fee to pay and no approval wait.</p>
                             </div>
                         </div>
 
                         <div class="d-grid gap-2">
-                            @if($paystackConfigured ?? false)
-                                <button type="submit" class="btn btn-primary btn-lg">Continue to Paystack</button>
-                            @else
-                                <button type="button" class="btn btn-secondary btn-lg" disabled>Paystack Not Configured Yet</button>
-                            @endif
+                            <button type="submit" class="btn btn-primary btn-lg">Create My Workspace</button>
                             <a href="{{ url('/') }}" class="btn btn-outline-secondary">Back Home</a>
                         </div>
                     </div>

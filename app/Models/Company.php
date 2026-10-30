@@ -76,8 +76,9 @@ class Company extends Model
 
     public function hasExpiredSubscription(): bool
     {
-        return $this->subscription_expires_at === null
-            || $this->subscription_expires_at->lte(now());
+        // HOWSEY access is free, so no workspace is ever treated as expired.
+        // The subscription columns are kept for reference only.
+        return false;
     }
 
     public function hasActiveSubscription(): bool

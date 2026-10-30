@@ -44,10 +44,6 @@ class CompanyApplicationController extends Controller
             return back()->with('error', 'This application has already been approved.');
         }
 
-        if ($companyApplication->paystack_transaction_status !== 'success') {
-            return back()->with('error', 'Approve this application only after the Paystack payment has been confirmed.');
-        }
-
         $validated = $request->validate([
             'review_notes' => ['nullable', 'string'],
         ]);

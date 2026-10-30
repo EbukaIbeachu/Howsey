@@ -21,12 +21,9 @@
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <div class="border rounded-3 p-3 h-100">
-                                <div class="small text-uppercase text-muted fw-semibold mb-2">Payment</div>
-                                <div class="fw-semibold mb-1">Status: {{ ucfirst($companyApplication->paystack_transaction_status) }}</div>
-                                <div class="small text-muted">Annual workspace fee: NGN {{ number_format((float) $companyApplication->payment_amount, 2) }}</div>
-                                @if($companyApplication->paystack_paid_at)
-                                    <div class="small text-muted">Paid at: {{ $companyApplication->paystack_paid_at->format('M d, Y h:i A') }}</div>
-                                @endif
+                                <div class="small text-uppercase text-muted fw-semibold mb-2">Access</div>
+                                <div class="fw-semibold mb-1">Free</div>
+                                <div class="small text-muted">HOWSEY access is free. There is no fee to pay.</div>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -44,7 +41,7 @@
                                 @if($companyApplication->company)
                                     <div class="small text-muted">Workspace URL: <a href="{{ route('companies.portal', $companyApplication->company->slug) }}">{{ route('companies.portal', $companyApplication->company->slug) }}</a></div>
                                 @else
-                                    <div class="small text-muted">The company workspace is created only after payment review and approval, and the first annual access window starts once the company is approved.</div>
+                                    <div class="small text-muted">The company workspace is created automatically as soon as the application is submitted. HOWSEY access is free.</div>
                                 @endif
                             </div>
                         </div>
@@ -58,10 +55,7 @@
                     @endif
 
                     <div class="d-flex flex-wrap gap-2">
-                        @if(($paystackConfigured ?? false) && $companyApplication->paystack_authorization_url && $companyApplication->paystack_transaction_status !== 'success')
-                            <a href="{{ $companyApplication->paystack_authorization_url }}" class="btn btn-primary">Return to Paystack</a>
-                        @endif
-                        <a href="{{ route('companies.public.create') }}" class="btn btn-outline-secondary">Start Another Application</a>
+                        <a href="{{ route('companies.public.create') }}" class="btn btn-primary">Create Another Workspace</a>
                         <a href="{{ url('/') }}" class="btn btn-outline-secondary">Back Home</a>
                     </div>
                 </div>
