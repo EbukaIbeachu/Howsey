@@ -307,7 +307,7 @@
 
     @if(($renderMode ?? 'web') === 'web')
     <div class="toolbar">
-        <a href="{{ route('payments.receipt', ['payment' => $payment, 'download' => 1]) }}" class="btn-download-pdf">Download Receipt (PDF)</a>
+        <a href="{{ route('payments.receipt', ['payment' => $payment, 'download' => 1]) }}" class="btn-download-pdf" data-filename="payment-receipt-{{ $payment->id }}.pdf">Download Receipt (PDF)</a>
         <button type="button" class="btn-download-png" style="display:none;">Download Image (PNG)</button>
         <button type="button" class="btn-print-receipt">Print Receipt</button>
         <a href="{{ $backUrl }}" class="btn-close-receipt">Close Receipt</a>
@@ -341,6 +341,50 @@
                 printButton.addEventListener('click', function () {
                     shouldReturnAfterPrint = true;
                     window.print();
+                });
+            }
+
+            // Mobile browsers (especially in-app webviews) often ignore a PDF
+            // download triggered by a plain navigation, so the tap appears to
+            // do nothing. Fetch the PDF and hand it to the browser as a blob,
+            // falling back to the plain link if anything goes wrong.
+            const pdfLink = document.querySelector('.btn-download-pdf');
+            if (pdfLink && window.fetch && window.URL && URL.createObjectURL) {
+                pdfLink.addEventListener('click', function (event) {
+                    event.preventDefault();
+
+                    const originalText = pdfLink.textContent;
+                    pdfLink.textContent = 'Preparing download...';
+
+                    fetch(pdfLink.href, { credentials: 'same-origin' })
+                        .then(function (response) {
+                            const contentType = response.headers.get('content-type') || '';
+
+                            if (!response.ok || contentType.indexOf('pdf') === -1) {
+                                throw new Error('Receipt download failed with status ' + response.status);
+                            }
+
+                            return response.blob();
+                        })
+                        .then(function (blob) {
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = pdfLink.getAttribute('data-filename') || 'payment-receipt-' + paymentId + '.pdf';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            setTimeout(function () {
+                                URL.revokeObjectURL(url);
+                            }, 10000);
+                        })
+                        .catch(function (err) {
+                            console.error('Receipt download failed:', err);
+                            window.location.href = pdfLink.href;
+                        })
+                        .finally(function () {
+                            pdfLink.textContent = originalText;
+                        });
                 });
             }
 

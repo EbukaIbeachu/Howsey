@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'howsey-pwa-v3';
+const CACHE_VERSION = 'howsey-pwa-v4';
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
 const APP_SCOPE_URL = new URL(self.registration.scope);
 const APP_BASE_PATH = APP_SCOPE_URL.pathname.replace(/\/$/, '');
@@ -73,6 +73,13 @@ self.addEventListener('fetch', event => {
   }
 
   const url = new URL(request.url);
+
+  // Never intercept file downloads (receipts, exports). Handling them here
+  // makes mobile browsers drop the download silently, so let the browser
+  // fetch them natively instead.
+  if (url.searchParams.has('download')) {
+    return;
+  }
 
   if (request.mode === 'navigate' && shouldHandleNavigation(url)) {
     event.respondWith(
