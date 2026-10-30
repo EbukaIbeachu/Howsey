@@ -181,6 +181,9 @@ class DashboardController extends Controller
 
         // Statistics
         if ($isManager) {
+            // Net Income (YTD) = rent collected this year (by payment_date) + non-rejected
+            // other income - non-rejected expenses. Pending entries are counted so freshly
+            // recorded amounts appear immediately.
             $paidTotal = (float) Payment::where('status', 'COMPLETED')
                 ->whereYear('payment_date', $currentYear)
                 ->whereHas('rent.unit.building', function ($q) use ($buildingIds) {
@@ -204,7 +207,7 @@ class DashboardController extends Controller
                         $q->whereIn('id', $buildingIds);
                     })->count(),
                 'paid_total' => $paidTotal,
-                'net_cash_flow' => ($paidTotal + $otherIncomeTotal) - $expenseTotal,
+                'net_income' => ($paidTotal + $otherIncomeTotal) - $expenseTotal,
                 'overdue_count' => Rent::active()
                     ->whereHas('unit.building', function ($q) use ($buildingIds) {
                         $q->whereIn('id', $buildingIds);
@@ -230,6 +233,7 @@ class DashboardController extends Controller
                     ->get();
             }
         } else {
+            // Same Net Income (YTD) basis as the manager branch, but unscoped.
             $paidTotal = (float) Payment::where('status', 'COMPLETED')
                 ->whereYear('payment_date', $currentYear)
                 ->sum('amount');
@@ -246,7 +250,7 @@ class DashboardController extends Controller
                 'total_buildings' => Building::count(),
                 'total_tenants' => Tenant::where('active', true)->count(),
                 'paid_total' => $paidTotal,
-                'net_cash_flow' => ($paidTotal + $otherIncomeTotal) - $expenseTotal,
+                'net_income' => ($paidTotal + $otherIncomeTotal) - $expenseTotal,
                 'overdue_count' => Rent::active()->get()->filter(function ($rent) {
                     return $rent->balance > 0;
                 })->count(),

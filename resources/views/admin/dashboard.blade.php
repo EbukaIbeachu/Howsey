@@ -199,10 +199,10 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h6 class="card-title text-uppercase small opacity-75 fw-bold">Net Cash Flow</h6>
+                        <h6 class="card-title text-uppercase small opacity-75 fw-bold">Net Income (YTD)</h6>
                         @php
-                            // Format exact net cash flow with 2 decimal places
-                            $formattedRevenue = number_format($stats['net_cash_flow'] ?? 0, 2);
+                            // Format exact net income (year to date) with 2 decimal places
+                            $formattedRevenue = number_format($stats['net_income'] ?? 0, 2);
                             $revLen = strlen($formattedRevenue);
                             // Base size display-6, reduces as length increases
                             $revClass = 'display-6';
