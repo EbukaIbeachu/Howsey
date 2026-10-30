@@ -285,7 +285,8 @@
         .portal-pwa-actions {
             position: fixed;
             left: 1rem;
-            bottom: 1rem;
+            /* Sits above the masked HOWSEY badge pinned at the bottom-left corner. */
+            bottom: 3.75rem;
             z-index: 1040;
             display: flex;
             flex-direction: column;
@@ -397,7 +398,7 @@
             .portal-pwa-actions {
                 left: 0.75rem;
                 right: 0.75rem;
-                bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+                bottom: calc(3.75rem + env(safe-area-inset-bottom, 0px));
                 max-width: none;
             }
             .portal-pwa-actions .btn {
@@ -800,5 +801,7 @@
             })();
         </script>
     @endif
+
+    @include('partials.howsey-credit')
 </body>
 </html>

@@ -873,13 +873,17 @@
         </div>
     @endif
 
+    @if(request()->routeIs('dashboard'))
+        @include('partials.howsey-credit')
+    @endif
+
     @if($enablePwaUi)
-        <button id="pwa-notification-button" type="button" class="btn btn-outline-primary shadow-sm" style="position: fixed; bottom: 76px; left: 20px; z-index: 1000; display: none; align-items: center; gap: 6px; border-radius: 999px;">
+        <button id="pwa-notification-button" type="button" class="btn btn-outline-primary shadow-sm" style="position: fixed; bottom: 120px; left: 20px; z-index: 1000; display: none; align-items: center; gap: 6px; border-radius: 999px;">
             <i class="bi bi-bell"></i>
             <span>Enable Alerts</span>
         </button>
 
-        <button id="pwa-install-button" type="button" class="btn btn-primary shadow-sm" style="position: fixed; bottom: 20px; left: 20px; z-index: 1000; display: none; align-items: center; gap: 6px; border-radius: 999px;">
+        <button id="pwa-install-button" type="button" class="btn btn-primary shadow-sm" style="position: fixed; bottom: 64px; left: 20px; z-index: 1000; display: none; align-items: center; gap: 6px; border-radius: 999px;">
             <i class="bi bi-download"></i>
             <span>Install App</span>
         </button>
