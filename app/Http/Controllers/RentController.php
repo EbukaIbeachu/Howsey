@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class RentController extends Controller
 {
@@ -101,7 +102,7 @@ class RentController extends Controller
             'tenant_id' => 'required|exists:tenants,id',
             'unit_id' => 'required|exists:units,id',
             'annual_amount' => 'required|numeric|min:0',
-            'rent_duration' => 'nullable|in:daily,weekly,monthly,annually',
+            'rent_duration' => ['nullable', Rule::in(array_keys(Rent::rentDurationOptions()))],
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after:start_date',
             'status' => 'nullable|in:ACTIVE,TERMINATED,EXPIRED',
@@ -234,7 +235,7 @@ class RentController extends Controller
             'tenant_id' => 'required|exists:tenants,id',
             'unit_id' => 'required|exists:units,id',
             'annual_amount' => 'required|numeric|min:0',
-            'rent_duration' => 'nullable|in:daily,weekly,monthly,annually',
+            'rent_duration' => ['nullable', Rule::in(array_keys(Rent::rentDurationOptions()))],
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after:start_date',
             'status' => 'required|in:ACTIVE,TERMINATED,EXPIRED',
@@ -525,6 +526,7 @@ class RentController extends Controller
             Rent::DURATION_DAILY => 1,
             Rent::DURATION_WEEKLY => (int) $start->dayOfWeekIso,
             Rent::DURATION_MONTHLY => (int) $start->day,
+            Rent::DURATION_QUARTERLY => (int) $start->day,
             default => (int) $start->day,
         };
     }

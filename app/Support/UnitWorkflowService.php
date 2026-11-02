@@ -116,6 +116,7 @@ class UnitWorkflowService
             Rent::DURATION_DAILY => 1,
             Rent::DURATION_WEEKLY => (int) $start->dayOfWeekIso,
             Rent::DURATION_MONTHLY => (int) $start->day,
+            Rent::DURATION_QUARTERLY => (int) $start->day,
             default => (int) $start->day,
         };
     }

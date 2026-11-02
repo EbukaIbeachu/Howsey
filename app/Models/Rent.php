@@ -16,12 +16,14 @@ class Rent extends Model
     public const DURATION_DAILY = 'daily';
     public const DURATION_WEEKLY = 'weekly';
     public const DURATION_MONTHLY = 'monthly';
+    public const DURATION_QUARTERLY = 'quarterly';
     public const DURATION_ANNUALLY = 'annually';
 
     public const DURATIONS = [
         self::DURATION_DAILY,
         self::DURATION_WEEKLY,
         self::DURATION_MONTHLY,
+        self::DURATION_QUARTERLY,
         self::DURATION_ANNUALLY,
     ];
 
@@ -102,6 +104,7 @@ class Rent extends Model
             self::DURATION_DAILY => 'Daily',
             self::DURATION_WEEKLY => 'Weekly',
             self::DURATION_MONTHLY => 'Monthly',
+            self::DURATION_QUARTERLY => 'Quarterly',
             default => 'Annually',
         };
     }
@@ -112,6 +115,7 @@ class Rent extends Model
             self::DURATION_DAILY => 'Daily Rent',
             self::DURATION_WEEKLY => 'Weekly Rent',
             self::DURATION_MONTHLY => 'Monthly Rent',
+            self::DURATION_QUARTERLY => 'Quarterly Rent',
             default => 'Annual Rent',
         };
     }
@@ -122,7 +126,32 @@ class Rent extends Model
             self::DURATION_DAILY => '/day',
             self::DURATION_WEEKLY => '/week',
             self::DURATION_MONTHLY => '/month',
+            self::DURATION_QUARTERLY => '/quarter',
             default => '/year',
+        };
+    }
+
+    public function getAgreementRentIntervalTextAttribute(): string
+    {
+        return match ($this->rent_duration_value) {
+            self::DURATION_DAILY => 'per day',
+            self::DURATION_WEEKLY => 'per week',
+            self::DURATION_MONTHLY => 'per month',
+            self::DURATION_QUARTERLY => 'per quarter',
+            default => 'per year',
+        };
+    }
+
+    public function getNoticeToQuitTextAttribute(): string
+    {
+        return match ($this->rent_duration_value) {
+            // Daily agreements remain supported by the product even though the
+            // supplied notice guidance starts at weekly tenancies.
+            self::DURATION_DAILY => 'One (1) Day',
+            self::DURATION_WEEKLY => 'One (1) Week',
+            self::DURATION_MONTHLY => 'One (1) Month',
+            self::DURATION_QUARTERLY => 'Three (3) Months',
+            default => 'Six (6) Months',
         };
     }
 
@@ -136,6 +165,7 @@ class Rent extends Model
             self::DURATION_DAILY => 'Every day',
             self::DURATION_WEEKLY => 'Every '.$this->start_date->format('l'),
             self::DURATION_MONTHLY => 'Every month on the '.$this->start_date->format('jS'),
+            self::DURATION_QUARTERLY => 'Every 3 months on the '.$this->start_date->format('jS'),
             default => 'Every year on '.$this->start_date->format('jS F'),
         };
     }
@@ -167,12 +197,14 @@ class Rent extends Model
         $days = max(1, (int) $this->start_date->diffInDays($this->end_date) + 1);
         $weeks = max(1, (int) ceil($days / 7));
         $months = max(1, (int) ceil($days / 30));
+        $quarters = max(1, (int) ceil($months / 3));
         $years = max(1, (int) $this->start_date->diffInYears($this->end_date));
 
         return match ($this->rent_duration_value) {
             self::DURATION_DAILY => $days.' day'.($days === 1 ? '' : 's'),
             self::DURATION_WEEKLY => $weeks.' week'.($weeks === 1 ? '' : 's'),
             self::DURATION_MONTHLY => $months.' month'.($months === 1 ? '' : 's'),
+            self::DURATION_QUARTERLY => $quarters.' quarter'.($quarters === 1 ? '' : 's'),
             default => $years.' year'.($years === 1 ? '' : 's'),
         };
     }
@@ -249,6 +281,7 @@ class Rent extends Model
                 self::DURATION_DAILY => $nextDate->addDay(),
                 self::DURATION_WEEKLY => $nextDate->addWeek(),
                 self::DURATION_MONTHLY => $nextDate->addMonthNoOverflow(),
+                self::DURATION_QUARTERLY => $nextDate->addMonthsNoOverflow(3),
                 default => $nextDate->addYear(),
             };
         }
@@ -262,6 +295,7 @@ class Rent extends Model
             self::DURATION_DAILY => 'Daily',
             self::DURATION_WEEKLY => 'Weekly',
             self::DURATION_MONTHLY => 'Monthly',
+            self::DURATION_QUARTERLY => 'Quarterly',
             self::DURATION_ANNUALLY => 'Annually',
         ];
     }

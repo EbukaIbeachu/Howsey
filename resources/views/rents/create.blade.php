@@ -15,7 +15,7 @@
             <div class="card-body">
                 @if(!($rentDurationSupported ?? false))
                     <div class="alert alert-warning">
-                        Rent duration is not yet available on this deployment. Run the `rent_duration` migration before creating agreements so Daily, Weekly, Monthly, and Annually can be saved correctly.
+                        Rent duration is not yet available on this deployment. Run the `rent_duration` migration before creating agreements so Daily, Weekly, Monthly, Quarterly, and Annually can be saved correctly.
                     </div>
                 @endif
                 <form action="{{ route('rents.store') }}" method="POST">
@@ -89,7 +89,7 @@
                                     <option value="{{ $value }}" {{ old('rent_duration', 'annually') === $value ? 'selected' : '' }}>{{ $label }}</option>
                                 @endforeach
                             </select>
-                            <div class="form-text">Choose whether this rent amount is charged daily, weekly, monthly, or annually.</div>
+                            <div class="form-text">Choose whether this rent amount is charged daily, weekly, monthly, quarterly, or annually.</div>
                             @error('rent_duration')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

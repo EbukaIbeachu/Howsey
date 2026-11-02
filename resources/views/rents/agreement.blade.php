@@ -106,12 +106,8 @@
         $agreementCompanyLogoUrl = $agreementCompany?->settings?->logo_path
             ? url('/storage/'.$agreementCompany->settings->logo_path)
             : null;
-        $rentIntervalText = match ($rent->rent_duration_value) {
-            \App\Models\Rent::DURATION_DAILY => 'per day',
-            \App\Models\Rent::DURATION_WEEKLY => 'per week',
-            \App\Models\Rent::DURATION_MONTHLY => 'per month',
-            default => 'per year',
-        };
+        $rentIntervalText = $rent->agreement_rent_interval_text;
+        $noticeToQuitText = $rent->notice_to_quit_text;
     @endphp
 
     @if(!empty($agreementWatermarkText))
@@ -199,7 +195,7 @@
 
     <div class="section">
         5. <span class="bold">NOTICE TO QUIT</span><br>
-        Either party may terminate this tenancy upon the expiration of the term or by giving <span class="bold">Six (6) Months</span> written notice to the other party.
+        Either party may terminate this tenancy upon the expiration of the term or by giving <span class="bold">{{ $noticeToQuitText }}</span> written notice to the other party.
     </div>
 
     <div class="section">
