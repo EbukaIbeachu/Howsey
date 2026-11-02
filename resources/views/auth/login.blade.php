@@ -8,7 +8,7 @@
         ? 'Company Admin Login'
         : (($branding['app_name'] ?? ($loginCompany?->name ?? 'HOWSEY')).' Login');
     $loginSupportText = $rootCompanyAdminAccess
-        ? 'Use the company workspace link or slug together with the full credentials of a company admin account. Managers, accountants, and tenants should sign in from their company-specific page instead.'
+        ? 'Enter your company workspace together with your account ID and password to continue.'
         : ($branding['app_name'] ?? ($loginCompany?->name ?? 'Property Management System'));
     $brandName = $branding['app_name'] ?? ($loginCompany?->name ?? 'HOWSEY');
     $brandLogo = $branding['logo_url'] ?? null;
@@ -134,16 +134,29 @@
             justify-content: flex-start !important;
             padding-top: 1.9rem;
         }
+        .auth-hero--main-desktop {
+            justify-content: flex-start !important;
+            padding-top: 1.55rem;
+        }
         .auth-hero--workspace-desktop .auth-brand-lockup {
             margin-bottom: 0.8rem;
+        }
+        .auth-hero--main-desktop .auth-brand-lockup {
+            margin-bottom: 0.95rem;
         }
         .auth-hero--workspace-desktop h1 {
             font-size: clamp(1.95rem, 2.7vw, 2.75rem);
             margin-bottom: 0.7rem;
         }
+        .auth-hero--main-desktop h1 {
+            margin-bottom: 0.65rem;
+        }
         .auth-hero--workspace-desktop .auth-hero-copy {
             max-width: 30rem;
             margin-bottom: 1.15rem;
+        }
+        .auth-hero--main-desktop .auth-hero-copy {
+            margin-bottom: 1.1rem;
         }
         .auth-trust-grid {
             display: grid;
@@ -765,7 +778,7 @@
             <div class="auth-surface">
                 <div class="row g-0 align-items-stretch">
                     <div class="{{ $isWorkspaceLogin ? 'col-lg-6' : 'col-lg-7' }} auth-hero-column">
-                        <div class="auth-hero h-100 d-flex flex-column justify-content-center {{ $isWorkspaceLogin ? 'auth-hero--workspace-desktop' : '' }}">
+                        <div class="auth-hero h-100 d-flex flex-column justify-content-center {{ $isWorkspaceLogin ? 'auth-hero--workspace-desktop' : 'auth-hero--main-desktop' }}">
                             @if($isWorkspaceLogin)
                                 <div class="auth-badge">
                                     <i class="bi bi-stars"></i>

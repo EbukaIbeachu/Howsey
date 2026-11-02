@@ -19,7 +19,7 @@
         $staffRegisterUrl = $portalCompany ? route('companies.register', $portalCompany->slug) : route('register');
         $tenantRegisterUrl = $portalCompany ? route('companies.register.tenant', $portalCompany->slug) : route('register.tenant');
         $companyCreateUrl = route('companies.public.create');
-        $existingWorkspaceAdminLoginUrl = route('login', ['entry' => 'company-admin']);
+        $existingWorkspaceAdminLoginUrl = route('login');
         $isMainHowseyHome = ! $portalCompany;
         $enablePortalPwaUi = (bool) $portalCompany;
         $companyHasUploadedLogo = filled(optional($portalCompany?->settings)->logo_path);
@@ -41,7 +41,7 @@
             ? 'Use Get Started to register new managers, accountants, or tenants directly into the '.$brandName.' workspace.'
             : "Set up your company's workspace to get started.";
         $companyCreateUrlMain = route('companies.public.create');
-        $adminLoginUrlMain = route('login', ['entry' => 'company-admin']);
+        $adminLoginUrlMain = route('login');
     @endphp
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -1454,7 +1454,7 @@
                             </a>
                             <a href="{{ $existingWorkspaceAdminLoginUrl }}" class="role-option-card p-3">
                                 <div class="fw-bold text-primary mb-1">Existing Workspace Access</div>
-                                <div class="small text-muted">Go to the company-admin login page. Only company admins can sign in or request password recovery from the main HOWSEY homepage.</div>
+                                <div class="small text-muted">Go to the workspace login page to sign in with your account ID and password.</div>
                             </a>
                         @endif
                     </div>
