@@ -108,6 +108,10 @@ Route::get('/', function () {
     return view('welcome', ['portalCompany' => $portalCompany]);
 });
 
+// Public legal pages. Simple view routes: no controller, no database access.
+Route::view('/privacy', 'legal.privacy')->name('legal.privacy');
+Route::view('/terms', 'legal.terms')->name('legal.terms');
+
 Route::get('/company/register', [PublicCompanyRegistrationController::class, 'create'])->name('companies.public.create');
 Route::post('/company/register', [PublicCompanyRegistrationController::class, 'store'])->name('companies.public.store');
 Route::get('/company/register/created', [PublicCompanyRegistrationController::class, 'created'])->name('companies.public.created');

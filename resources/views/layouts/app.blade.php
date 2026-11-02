@@ -46,10 +46,10 @@
         $superAdminViewingCompanyLabel = $showSuperAdminCompanySwitcher
             ? 'Viewing Company: '.$superAdminViewingCompanyName
             : null;
-        $enableChatbot = Auth::check() && request()->routeIs('dashboard');
-        $enableScreensaver = $enableChatbot;
+        $enableChatbot = Auth::check();
+        $enableScreensaver = Auth::check() && request()->routeIs('dashboard');
         $enablePwaUi = true;
-        $enablePwaInstallUi = $enablePwaUi;
+        $enablePwaInstallUi = $enablePwaUi && ! request()->routeIs('companies.public.create');
         $enablePwaNotificationUi = $enablePwaUi && Auth::check();
         $shellAssetVersion = '20261020-watermark-visible';
         $shortcutRoutes = Auth::check()
@@ -883,10 +883,12 @@
             <span>Enable Alerts</span>
         </button>
 
-        <button id="pwa-install-button" type="button" class="btn btn-primary shadow-sm" style="position: fixed; bottom: 76px; left: 20px; z-index: 1000; display: none; align-items: center; gap: 6px; border-radius: 999px;">
-            <i class="bi bi-download"></i>
-            <span>Install App</span>
-        </button>
+        @if($enablePwaInstallUi)
+            <button id="pwa-install-button" type="button" class="btn btn-primary shadow-sm" style="position: fixed; bottom: 76px; left: 20px; z-index: 1000; display: none; align-items: center; gap: 6px; border-radius: 999px;">
+                <i class="bi bi-download"></i>
+                <span>Install App</span>
+            </button>
+        @endif
 
         <!-- PWA Install Instructions Modal -->
         <div class="modal fade" id="pwaInstallModal" tabindex="-1" aria-labelledby="pwaInstallModalLabel" aria-hidden="true">
