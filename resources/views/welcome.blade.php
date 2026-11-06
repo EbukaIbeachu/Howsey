@@ -1132,7 +1132,7 @@
             </div>
             <figure class="hp-preview-frame mb-4">
                 <div class="hp-preview-bar" aria-hidden="true"><span></span><span></span><span></span></div>
-                <img src="{{ asset('assets/images/howsey-dashboard-preview.png') }}"
+                <img src="{{ asset('assets/images/howsey-dashboard-preview.png') }}?v=2"
                      class="hp-preview-shot"
                      alt="HOWSEY dashboard showing property, tenant, rent and payment records for a demonstration company."
                      width="1335" height="690" loading="lazy" decoding="async">
@@ -1143,7 +1143,7 @@
                     <div class="hp-preview-frame h-100">
                         <figure class="hp-preview-tile mb-0">
                             <div class="hp-preview-tile-media">
-                                <img src="{{ asset('assets/images/landing-preview-tenants.png') }}"
+                                <img src="{{ asset('assets/images/landing-preview-tenants.png') }}?v=2"
                                      alt="HOWSEY tenant records view showing tenant names, units, contact details and status."
                                      width="1346" height="683" loading="lazy" decoding="async">
                             </div>
@@ -1158,7 +1158,7 @@
                     <div class="hp-preview-frame h-100">
                         <figure class="hp-preview-tile mb-0">
                             <div class="hp-preview-tile-media">
-                                <img src="{{ asset('assets/images/landing-preview-payments.png') }}"
+                                <img src="{{ asset('assets/images/landing-preview-payments.png') }}?v=2"
                                      alt="HOWSEY payments view showing rent amounts, payment methods and completion status."
                                      width="1343" height="690" loading="lazy" decoding="async">
                             </div>
@@ -1173,7 +1173,7 @@
                     <div class="hp-preview-frame h-100">
                         <figure class="hp-preview-tile mb-0">
                             <div class="hp-preview-tile-media">
-                                <img src="{{ asset('assets/images/landing-preview-properties.png') }}"
+                                <img src="{{ asset('assets/images/landing-preview-properties.png') }}?v=2"
                                      alt="HOWSEY property record showing a building profile, occupancy summary and unit directory."
                                      width="1339" height="683" loading="lazy" decoding="async">
                             </div>
@@ -1188,7 +1188,7 @@
                     <div class="hp-preview-frame h-100">
                         <figure class="hp-preview-tile mb-0">
                             <div class="hp-preview-tile-media">
-                                <img src="{{ asset('assets/images/landing-preview-maintenance.png') }}"
+                                <img src="{{ asset('assets/images/landing-preview-maintenance.png') }}?v=2"
                                      alt="HOWSEY maintenance requests view showing reported issues, priority, status and property location."
                                      width="1339" height="323" loading="lazy" decoding="async">
                             </div>
