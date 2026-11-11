@@ -9,6 +9,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompanySettingsController;
 use App\Http\Controllers\CompanySubscriptionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DataTransferController;
 use App\Http\Controllers\MaintenanceRequestController;
 use App\Http\Controllers\ManagerEditRequestController;
 use App\Http\Controllers\MessageController;
@@ -558,5 +559,13 @@ Route::middleware(['auth', 'prevent-back-history', 'company.subscription.active'
         Route::post('/entries/{entry}/request-edit', [AccountingController::class, 'requestEdit'])->name('request-edit');
         Route::post('/edit-requests/{editRequest}/handle', [AccountingController::class, 'handleEditRequest'])->name('handle-edit-request');
         Route::get('/audit-trail', [AccountingController::class, 'auditTrail'])->name('audit-trail');
+    });
+
+    // Data import / export (administrators only)
+    Route::prefix('data')->name('data.')->middleware('admin.export')->group(function () {
+        Route::get('/', [DataTransferController::class, 'index'])->name('index');
+        Route::get('/template/{type}', [DataTransferController::class, 'template'])->name('template');
+        Route::post('/import', [DataTransferController::class, 'import'])->name('import');
+        Route::get('/export', [DataTransferController::class, 'export'])->name('export');
     });
 });

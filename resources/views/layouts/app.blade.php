@@ -504,6 +504,14 @@
                         @endpermission
                         @endif
 
+                        @if(!Auth::user()->isSuperAdmin() && Auth::user()->isAdmin() && Route::has('data.index'))
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('data.*') ? 'active' : '' }}" href="{{ route('data.index') }}">
+                                <i class="bi bi-arrow-down-up me-2"></i> Data
+                            </a>
+                        </li>
+                        @endif
+
                         @if(Auth::user()->isTenant())
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('maintenance.*') ? 'active' : '' }}" href="{{ route('maintenance.index') }}">
