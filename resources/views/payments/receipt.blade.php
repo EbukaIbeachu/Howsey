@@ -307,17 +307,19 @@
 
     @if(($renderMode ?? 'web') === 'web')
     <div class="toolbar">
-        <a href="{{ route('payments.receipt', ['payment' => $payment, 'download' => 1]) }}" class="btn-download-pdf" data-filename="payment-receipt-{{ $payment->id }}.pdf">Download Receipt (PDF)</a>
-        <button type="button" class="btn-download-png" style="display:none;">Download Image (PNG)</button>
+        <a href="{{ route('payments.receipt', ['payment' => $payment, 'download' => 1]) }}" class="btn-download-pdf" data-filename="payment-receipt-{{ $payment->id }}.pdf" target="_blank" rel="noopener">Download Receipt (PDF)</a>
+        <button type="button" class="btn-download-png" style="display:none;">Save Receipt as Image</button>
         <button type="button" class="btn-print-receipt">Print Receipt</button>
         <a href="{{ $backUrl }}" class="btn-close-receipt">Close Receipt</a>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
         (function () {
             const backUrl = @json($backUrl);
             const paymentId = {{ $payment->id }};
+            const pdfUrl = @json(route('payments.receipt', ['payment' => $payment, 'download' => 1]));
+            const pdfFileName = 'payment-receipt-' + paymentId + '.pdf';
             let shouldReturnAfterPrint = false;
+            let captureLibraryRequest = null;
 
             const isMobile = window.matchMedia('(max-width: 768px)').matches || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 
@@ -344,21 +346,55 @@
                 });
             }
 
+            // Last resort: hand the URL to the browser itself. Opening a new tab
+            // keeps the receipt on screen, which matters on mobile webviews
+            // where navigating away silently swallows the download.
+            function openPdfDirectly(url) {
+                let opened = null;
+
+                try {
+                    opened = window.open(url, '_blank', 'noopener');
+                } catch (err) {
+                    opened = null;
+                }
+
+                if (!opened) {
+                    window.location.href = url;
+                }
+            }
+
+            function saveBlob(blob, filename) {
+                const objectUrl = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = objectUrl;
+                link.download = filename;
+                link.rel = 'noopener';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(function () {
+                    URL.revokeObjectURL(objectUrl);
+                }, 10000);
+            }
+
             // Mobile browsers (especially in-app webviews) often ignore a PDF
             // download triggered by a plain navigation, so the tap appears to
             // do nothing. Fetch the PDF and hand it to the browser as a blob,
-            // falling back to the plain link if anything goes wrong.
+            // falling back to the bare URL if any step of that is unavailable.
             const pdfLink = document.querySelector('.btn-download-pdf');
             if (pdfLink && window.fetch && window.URL && URL.createObjectURL) {
                 pdfLink.addEventListener('click', function (event) {
+                    const url = pdfLink.href || pdfUrl;
+                    const filename = pdfLink.getAttribute('data-filename') || pdfFileName;
+
                     event.preventDefault();
 
                     const originalText = pdfLink.textContent;
                     pdfLink.textContent = 'Preparing download...';
 
-                    fetch(pdfLink.href, { credentials: 'same-origin' })
+                    fetch(url, { credentials: 'same-origin', cache: 'no-store' })
                         .then(function (response) {
-                            const contentType = response.headers.get('content-type') || '';
+                            const contentType = (response.headers.get('content-type') || '').toLowerCase();
 
                             if (!response.ok || contentType.indexOf('pdf') === -1) {
                                 throw new Error('Receipt download failed with status ' + response.status);
@@ -367,20 +403,18 @@
                             return response.blob();
                         })
                         .then(function (blob) {
-                            const url = URL.createObjectURL(blob);
-                            const link = document.createElement('a');
-                            link.href = url;
-                            link.download = pdfLink.getAttribute('data-filename') || 'payment-receipt-' + paymentId + '.pdf';
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                            setTimeout(function () {
-                                URL.revokeObjectURL(url);
-                            }, 10000);
+                            if (!blob || blob.size === 0) {
+                                throw new Error('Receipt download returned an empty file.');
+                            }
+
+                            saveBlob(blob, filename);
                         })
                         .catch(function (err) {
-                            console.error('Receipt download failed:', err);
-                            window.location.href = pdfLink.href;
+                            if (window.console && console.error) {
+                                console.error('Receipt download failed:', err);
+                            }
+
+                            openPdfDirectly(url);
                         })
                         .finally(function () {
                             pdfLink.textContent = originalText;
@@ -388,78 +422,121 @@
                 });
             }
 
-            // On mobile, also offer a PNG capture of the receipt alongside the PDF.
+            // On mobile, also offer an image capture of the receipt alongside the
+            // PDF. The capture library is fetched on demand, so a blocked CDN can
+            // never stop the receipt page (or the PDF button) from working.
+            function loadCaptureLibrary() {
+                if (window.html2canvas) {
+                    return Promise.resolve(window.html2canvas);
+                }
+
+                if (captureLibraryRequest) {
+                    return captureLibraryRequest;
+                }
+
+                captureLibraryRequest = new Promise(function (resolve, reject) {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                    script.async = true;
+                    script.onload = function () {
+                        if (window.html2canvas) {
+                            resolve(window.html2canvas);
+                            return;
+                        }
+
+                        reject(new Error('html2canvas did not initialise.'));
+                    };
+                    script.onerror = function () {
+                        reject(new Error('html2canvas could not be loaded.'));
+                    };
+                    document.head.appendChild(script);
+                });
+
+                return captureLibraryRequest;
+            }
+
+            function captureReceipt(html2canvas) {
+                const shell = document.querySelector('.receipt-shell');
+
+                if (!shell) {
+                    return Promise.reject(new Error('Receipt body not found.'));
+                }
+
+                // On mobile the details table overflows the narrow shell and
+                // would be clipped in the capture. Temporarily widen the shell so
+                // every column (including the amount) is rendered.
+                const wrap = shell.querySelector('.details-wrap');
+                const table = shell.querySelector('.details-table');
+                const captureWidth = Math.max(880, (table ? table.scrollWidth : 0) + 56);
+
+                const saved = {
+                    wrapOverflow: wrap ? wrap.style.overflow : '',
+                    shellWidth: shell.style.width,
+                    shellMaxWidth: shell.style.maxWidth,
+                    shellPosition: shell.style.position,
+                    shellLeft: shell.style.left,
+                    shellTop: shell.style.top,
+                    shellZIndex: shell.style.zIndex
+                };
+
+                if (wrap) {
+                    wrap.style.overflow = 'visible';
+                }
+                shell.style.position = 'absolute';
+                shell.style.left = '-9999px';
+                shell.style.top = '0';
+                shell.style.zIndex = '-1';
+                shell.style.maxWidth = 'none';
+                shell.style.width = captureWidth + 'px';
+
+                return html2canvas(shell, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    windowWidth: captureWidth
+                }).then(function (canvas) {
+                    const link = document.createElement('a');
+                    link.download = 'payment-receipt-' + paymentId + '.png';
+                    link.href = canvas.toDataURL('image/png');
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }).finally(function () {
+                    if (wrap) {
+                        wrap.style.overflow = saved.wrapOverflow;
+                    }
+                    shell.style.position = saved.shellPosition;
+                    shell.style.left = saved.shellLeft;
+                    shell.style.top = saved.shellTop;
+                    shell.style.zIndex = saved.shellZIndex;
+                    shell.style.maxWidth = saved.shellMaxWidth;
+                    shell.style.width = saved.shellWidth;
+                });
+            }
+
             const pngBtn = document.querySelector('.btn-download-png');
 
             if (isMobile && pngBtn) {
                 pngBtn.style.display = 'inline-block';
 
                 pngBtn.addEventListener('click', function () {
-                    const shell = document.querySelector('.receipt-shell');
-                    if (!shell || !window.html2canvas) {
-                        alert('Image capture is not available right now. Please use Print instead.');
-                        return;
-                    }
-
-                    // On mobile the details table overflows the narrow shell and
-                    // would be clipped in the capture. Temporarily widen the shell
-                    // so every column (including the amount) is rendered.
-                    const wrap = shell.querySelector('.details-wrap');
-                    const table = shell.querySelector('.details-table');
-                    const captureWidth = Math.max(880, (table ? table.scrollWidth : 0) + 56);
-
-                    const saved = {
-                        wrapOverflow: wrap ? wrap.style.overflow : '',
-                        shellWidth: shell.style.width,
-                        shellMaxWidth: shell.style.maxWidth,
-                        shellPosition: shell.style.position,
-                        shellLeft: shell.style.left,
-                        shellTop: shell.style.top,
-                        shellZIndex: shell.style.zIndex
-                    };
-
-                    if (wrap) {
-                        wrap.style.overflow = 'visible';
-                    }
-                    shell.style.position = 'absolute';
-                    shell.style.left = '-9999px';
-                    shell.style.top = '0';
-                    shell.style.zIndex = '-1';
-                    shell.style.maxWidth = 'none';
-                    shell.style.width = captureWidth + 'px';
-
                     const originalText = pngBtn.textContent;
                     pngBtn.disabled = true;
                     pngBtn.textContent = 'Generating image...';
 
-                    html2canvas(shell, {
-                        scale: 2,
-                        useCORS: true,
-                        backgroundColor: '#ffffff',
-                        windowWidth: captureWidth
-                    }).then(function (canvas) {
-                        const link = document.createElement('a');
-                        link.download = 'payment-receipt-' + paymentId + '.png';
-                        link.href = canvas.toDataURL('image/png');
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    }).catch(function (err) {
-                        console.error('Receipt PNG generation failed:', err);
-                        alert('Could not generate the receipt image. Please try again or use Print.');
-                    }).finally(function () {
-                        if (wrap) {
-                            wrap.style.overflow = saved.wrapOverflow;
-                        }
-                        shell.style.position = saved.shellPosition;
-                        shell.style.left = saved.shellLeft;
-                        shell.style.top = saved.shellTop;
-                        shell.style.zIndex = saved.shellZIndex;
-                        shell.style.maxWidth = saved.shellMaxWidth;
-                        shell.style.width = saved.shellWidth;
-                        pngBtn.disabled = false;
-                        pngBtn.textContent = originalText;
-                    });
+                    loadCaptureLibrary()
+                        .then(captureReceipt)
+                        .catch(function (err) {
+                            if (window.console && console.error) {
+                                console.error('Receipt image generation failed:', err);
+                            }
+
+                            alert('Could not save the receipt as an image on this device. Please use Print instead.');
+                        })
+                        .finally(function () {
+                            pngBtn.disabled = false;
+                            pngBtn.textContent = originalText;
+                        });
                 });
             }
         })();

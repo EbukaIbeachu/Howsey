@@ -64,8 +64,9 @@ class PaymentController extends Controller
         $rents = $rentsQuery->get();
 
         $selectedRent = $rentId ? Rent::with('payments')->find($rentId) : null;
+        $submissionToken = $this->issuePaymentSubmissionToken();
 
-        return view('payments.create', compact('rents', 'selectedRent'));
+        return view('payments.create', compact('rents', 'selectedRent', 'submissionToken'));
     }
 
     /**
@@ -193,6 +194,15 @@ class PaymentController extends Controller
             'payment_method' => 'nullable|string|max:50',
             'status' => 'nullable|in:COMPLETED,PENDING,FAILED',
         ]);
+
+        // A double-clicked (or re-posted) form used to record the same payment
+        // twice, which showed the tenant twice on the building financials. Each
+        // render of the form carries a single-use token, so the repeat submit is
+        // refused instead of inserting a second row.
+        $submissionToken = (string) $request->input('submission_token', '');
+        if ($submissionToken !== '' && ! $this->claimPaymentSubmissionToken($submissionToken)) {
+            return back()->with('error', 'That payment was already recorded, so it was not saved again.');
+        }
 
         $rent = Rent::with(['tenant', 'unit.building'])->find($validated['rent_id']);
         if ($actor->isManager()) {
@@ -377,6 +387,48 @@ class PaymentController extends Controller
         $payment->delete();
 
         return redirect()->route('payments.index')->with('success', 'Payment deleted successfully.');
+    }
+
+    /**
+     * Gives each render of the "record payment" form a single-use token so a
+     * double-click, a refresh or a back-button re-post cannot record the same
+     * payment twice.
+     */
+    private function issuePaymentSubmissionToken(): string
+    {
+        $token = (string) Str::uuid();
+
+        $tokens = collect((array) session()->get('payment.submission_tokens', []))
+            ->filter(fn ($issuedAt) => (int) $issuedAt > now()->subHours(2)->timestamp)
+            ->slice(-19)
+            ->put($token, now()->timestamp)
+            ->all();
+
+        session()->put('payment.submission_tokens', $tokens);
+
+        return $token;
+    }
+
+    /**
+     * Consumes a token issued by issuePaymentSubmissionToken(). Returns false
+     * when the token was never issued or has already been used.
+     */
+    private function claimPaymentSubmissionToken(string $token): bool
+    {
+        if ($token === '') {
+            return false;
+        }
+
+        $tokens = (array) session()->get('payment.submission_tokens', []);
+
+        if (! array_key_exists($token, $tokens)) {
+            return false;
+        }
+
+        unset($tokens[$token]);
+        session()->put('payment.submission_tokens', $tokens);
+
+        return true;
     }
 
     private function canDownloadReceipt($user, Payment $payment): bool

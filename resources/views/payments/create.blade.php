@@ -13,8 +13,9 @@
                 <h5 class="mb-0">Payment Details</h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('payments.store') }}" method="POST">
+                <form action="{{ route('payments.store') }}" method="POST" id="record-payment-form">
                     @csrf
+                    <input type="hidden" name="submission_token" value="{{ $submissionToken }}">
                     
                     <div class="mb-3">
                         <label for="rent_id" class="form-label">Lease Agreement <span class="text-danger">*</span></label>
@@ -79,7 +80,7 @@
 
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
                         <button type="reset" class="btn btn-light me-md-2">Reset</button>
-                        <button type="submit" class="btn btn-primary">Record Payment</button>
+                        <button type="submit" class="btn btn-primary" id="record-payment-submit">Record Payment</button>
                     </div>
                 </form>
             </div>
@@ -187,6 +188,17 @@
                 updateOutstanding();
             }
         });
+
+        // Stops a double-click from posting the same payment twice.
+        const paymentForm = document.getElementById('record-payment-form');
+        const paymentSubmit = document.getElementById('record-payment-submit');
+
+        if (paymentForm && paymentSubmit) {
+            paymentForm.addEventListener('submit', function () {
+                paymentSubmit.disabled = true;
+                paymentSubmit.textContent = 'Recording...';
+            });
+        }
     });
 </script>
 @endpush
