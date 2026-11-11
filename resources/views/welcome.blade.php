@@ -835,9 +835,45 @@
             }
         }
         @media (max-width: 768px) {
+            /* Main HOWSEY home only. On mobile the hero becomes a compact,
+               content-height band with a single full-width action instead of
+               the full-screen desktop hero. Company portals keep the shared
+               desktop hero because they never receive the .hp-body class. */
             .hp-body .hero-section {
                 height: auto;
+                min-height: auto;
+                padding: 5.25rem 0 2.5rem;
             }
+            .hp-body .hero-content {
+                padding-top: 0.5rem;
+                padding-bottom: 0;
+            }
+            .hp-body .hero-title {
+                font-size: 1.85rem;
+                margin-bottom: 0.75rem;
+            }
+            .hp-body .hero-subtitle {
+                font-size: 1rem;
+                margin-bottom: 1.1rem;
+            }
+        }
+        /* Mobile call-to-action stack: one full-width primary button and the
+           sign-in link presented as plain text underneath. */
+        .hp-hero-mobile-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.85rem;
+        }
+        .hp-hero-mobile-actions .btn {
+            width: 100%;
+            max-width: 22rem;
+        }
+        .hp-hero-mobile-signin {
+            color: var(--on-brand);
+            font-weight: 600;
+            text-decoration: underline;
+            text-underline-offset: 3px;
         }
         @media (prefers-reduced-motion: reduce) {
             html {
@@ -949,11 +985,17 @@
             <h1 class="hero-title">{{ $heroTitle }}</h1>
             <p class="hero-subtitle">{{ $heroSubtitle }}</p>
             @if($isMainHowseyHome && ! auth()->check())
-                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                {{-- Desktop keeps the side-by-side buttons. Mobile uses a single
+                     full-width primary action with sign-in as a text link. --}}
+                <div class="d-none d-md-flex justify-content-center gap-3 flex-wrap">
                     <a href="{{ $companyCreateUrlMain }}" class="btn btn-custom btn-lg">Create your company</a>
                     <a href="{{ $adminLoginUrlMain }}" class="hp-btn-ghost btn-lg">Sign in</a>
                 </div>
-                <p class="small mt-3 mb-0 text-white-50">{{ $getStartedHelp }}</p>
+                <p class="small mt-3 mb-0 text-white-50 d-none d-md-block">{{ $getStartedHelp }}</p>
+                <div class="d-md-none hp-hero-mobile-actions">
+                    <a href="{{ $companyCreateUrlMain }}" class="btn btn-custom btn-lg">Create your company</a>
+                    <a href="{{ $adminLoginUrlMain }}" class="hp-hero-mobile-signin">Sign in</a>
+                </div>
             @else
                 @auth
                     <a href="{{ $roleHomeUrl }}" class="btn btn-custom btn-lg">{{ $roleHomeLabel }}</a>
@@ -1138,7 +1180,10 @@
                      width="1335" height="690" loading="lazy" decoding="async">
                 <figcaption class="hp-preview-caption">HOWSEY dashboard shown with synthetic demonstration data. No real tenant or financial information is displayed.</figcaption>
             </figure>
-            <div class="row g-4">
+            {{-- The four preview tiles are desktop-only. On mobile the main
+                 dashboard screenshot above already provides a full preview,
+                 without adding several extra screens of scrolling. --}}
+            <div class="row g-4 d-none d-md-flex">
                 <div class="col-12 col-sm-6 col-lg-3">
                     <div class="hp-preview-frame h-100">
                         <figure class="hp-preview-tile mb-0">
