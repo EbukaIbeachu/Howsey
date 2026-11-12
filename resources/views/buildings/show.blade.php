@@ -563,6 +563,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Date</th>
+                                    <th>Period</th>
                                     <th>Tenant</th>
                                     <th class="d-none d-md-table-cell">Reference</th>
                                     <th>Amount</th>
@@ -573,11 +574,29 @@
                             </thead>
                             <tbody>
                                 @php
-                                    $payments = $building->rents->flatMap->payments->sortByDesc('payment_date');
+                                    // A building reaches its payments through its leases. Key them by
+                                    // payment id first so a single payment can never be listed twice,
+                                    // whatever the lease/unit relations happen to return.
+                                    $payments = $building->rents
+                                        ->flatMap->payments
+                                        ->unique('id')
+                                        ->sortByDesc('payment_date')
+                                        ->values();
                                 @endphp
                                 @forelse($payments as $payment)
                                 <tr class="{{ $payment->status === 'COMPLETED' ? 'mobile-status-completed' : ($payment->status === 'PENDING' ? 'mobile-status-pending' : ($payment->status === 'FAILED' ? 'mobile-status-failed' : 'mobile-status-inactive')) }}">
                                     <td>{{ $payment->payment_date->format('Y-m-d') }}</td>
+                                    <td class="text-nowrap">
+                                        @php
+                                            // The rental period this payment settles, so two payments of
+                                            // the same amount are never indistinguishable. Rows recorded
+                                            // before the due date was captured fall back to the payment
+                                            // date rather than showing an empty period.
+                                            $periodDate = $payment->due_date ?? $payment->payment_date;
+                                        @endphp
+                                        <div>{{ $periodDate->format('M d, Y') }}</div>
+                                        <div class="text-muted" style="font-size: .72rem;">{{ optional($payment->rent)->rent_duration_label }}</div>
+                                    </td>
                                     <td>{{ $payment->rent->tenant->full_name }}</td>
                                     <td class="font-monospace small d-none d-md-table-cell">{{ Str::limit($payment->rent->unit->unit_number . '-' . $payment->id, 15) }}</td>
                                     <td class="fw-bold text-success">+₦{{ number_format($payment->amount, 2) }}</td>
@@ -605,7 +624,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="7" class="text-center py-4 text-muted">No payments recorded yet.</td>
+                                    <td colspan="8" class="text-center py-4 text-muted">No payments recorded yet.</td>
                                 </tr>
                                 @endforelse
                             </tbody>

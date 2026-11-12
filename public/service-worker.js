@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'howsey-pwa-v5';
+const CACHE_VERSION = 'howsey-pwa-v6';
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
 const APP_SCOPE_URL = new URL(self.registration.scope);
 const APP_BASE_PATH = APP_SCOPE_URL.pathname.replace(/\/$/, '');
