@@ -13,6 +13,7 @@ use App\Support\RoleRequestNotifier;
 use Barryvdh\DomPDF\Facade\Pdf as PdfFacade;
 use Barryvdh\DomPDF\ServiceProvider;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class PaymentController extends Controller
@@ -412,10 +413,21 @@ class PaymentController extends Controller
     /**
      * Consumes a token issued by issuePaymentSubmissionToken(). Returns false
      * when the token was never issued or has already been used.
+     *
+     * The session copy is read and cleared in memory, so two submits landing in
+     * the same instant could both see it as unused. The token is therefore also
+     * reserved in the cache, whose add() locks the entry while it checks and
+     * writes, so only the first request can ever win the token. The reservation
+     * is keyed to the token, not to the lease or the period, so a part payment
+     * -- a fresh visit to the form with its own token -- is unaffected.
      */
     private function claimPaymentSubmissionToken(string $token): bool
     {
         if ($token === '') {
+            return false;
+        }
+
+        if (! Cache::add('payment-submission:'.$token, true, now()->addHours(2))) {
             return false;
         }
 
