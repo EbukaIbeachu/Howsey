@@ -94,7 +94,7 @@ class UnitWorkflowService
                     'company_id' => $building->company_id,
                     'rent_id' => $rent->id,
                     'payment_date' => $paymentDate,
-                    'due_date' => $paymentDate,
+                    'due_date' => $rent->next_due_date ?? $rent->start_date,
                     'amount' => $payload['financial_amount'],
                     'payment_method' => $payload['financial_payment_method'] ?? 'BANK_TRANSFER',
                     'status' => $payload['financial_status'] ?? 'PENDING',

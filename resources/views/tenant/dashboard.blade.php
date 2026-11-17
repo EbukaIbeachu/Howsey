@@ -131,7 +131,7 @@
                                 <td class="d-none d-md-table-cell">{{ $payment->payment_method ?? 'N/A' }}</td>
                                 <td>
                                     @if(strtoupper((string) $payment->status) === 'COMPLETED')
-                                        <a href="{{ route('payments.receipt', $payment) }}" class="btn btn-sm btn-outline-success">
+                                        <a href="{{ route('payments.receipt', ['payment' => $payment, 'download' => 1]) }}" class="btn btn-sm btn-outline-success">
                                             <i class="bi bi-download me-1"></i>Receipt
                                         </a>
                                     @else
